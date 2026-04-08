@@ -1,0 +1,36 @@
+import 'package:drift/drift.dart';
+import '../../../core/db/database.dart';
+import '../../../core/db/tables.dart';
+
+part 'groups_dao.g.dart';
+
+@DriftAccessor(tables: [Groups])
+class GroupsDao extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
+  GroupsDao(super.db);
+
+  Stream<List<Group>> watchAll() => select(groups).watch();
+
+  Future<Group?> getById(int id) =>
+      (select(groups)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Future<int> insertGroup(GroupsCompanion entry) =>
+      into(groups).insert(entry);
+
+  Future<void> updateGroup(Group entry) =>
+      update(groups).replace(entry);
+
+  Future<int> deleteGroup(int id) =>
+      (delete(groups)..where((t) => t.id.equals(id))).go();
+
+  Future<bool> nameExists(String name, {int? excludeId}) async {
+    final query = select(groups)
+      ..where((t) {
+        if (excludeId != null) {
+          return t.name.lower().equals(name.toLowerCase()) &
+              t.id.equals(excludeId).not();
+        }
+        return t.name.lower().equals(name.toLowerCase());
+      });
+    return (await query.getSingleOrNull()) != null;
+  }
+}
