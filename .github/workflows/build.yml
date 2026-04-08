@@ -1,0 +1,54 @@
+name: Build Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        run: |
+          export PATH=$PATH:/home/deployer/flutter/bin
+          flutter --version
+
+      - name: Get dependencies
+        run: |
+          export PATH=$PATH:/home/deployer/flutter/bin
+          flutter pub get
+
+      - name: Build debug APK
+        run: |
+          export PATH=$PATH:/home/deployer/flutter/bin
+          export ANDROID_HOME=/home/deployer/android-sdk
+          flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: koshyk-debug-${{ github.ref_name }}
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Send APK via email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "koshyk_app ${{ github.ref_name }} — debug APK"
+          to: G.Vyacheslav@gmail.com
+          from: koshyk_app CI
+          body: |
+            Нова збірка koshyk_app готова!
+            Тег: ${{ github.ref_name }}
+            Коміт: ${{ github.sha }}
+            
+            APK прикріплено до листа.
+          attachments: build/app/outputs/flutter-apk/app-debug.apk
