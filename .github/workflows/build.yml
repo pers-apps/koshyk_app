@@ -29,26 +29,21 @@ jobs:
           export ANDROID_HOME=/home/deployer/android-sdk
           flutter build apk --debug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: koshyk-debug-${{ github.ref_name }}
-          path: build/app/outputs/flutter-apk/app-debug.apk
-
-      - name: Send APK via email
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "koshyk_app ${{ github.ref_name }} — debug APK"
-          to: G.Vyacheslav@gmail.com
-          from: koshyk_app CI
+          files: build/app/outputs/flutter-apk/app-debug.apk
+          name: "koshyk_app ${{ github.ref_name }}"
           body: |
-            Нова збірка koshyk_app готова!
-            Тег: ${{ github.ref_name }}
-            Коміт: ${{ github.sha }}
+            🚀 Debug APK для ${{ github.ref_name }}
             
-            APK прикріплено до листа.
-          attachments: build/app/outputs/flutter-apk/app-debug.apk
+            Коміт: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify via Telegram
+        run: |
+          RELEASE_URL="https://github.com/gviacheslav-sketch/koshyk_app/releases/tag/${{ github.ref_name }}"
+          APK_URL="https://github.com/gviacheslav-sketch/koshyk_app/releases/download/${{ github.ref_name }}/app-debug.apk"
+          MESSAGE="✅ *koshyk\_app ${{ github.ref_name }}* зібрано!%0A%0A📦 [Завантажити APK](${APK_URL})%0A🔗 [Release](${RELEASE_URL})"
+          curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage?chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MESSAGE}&parse_mode=Markdown" > /dev/null
