@@ -62,7 +62,8 @@ class AppLocalizationsUk extends AppLocalizations {
   String get deleteParticipant => 'Видалити учасника';
 
   @override
-  String get cannotDeleteParticipantHasData => 'Неможливо видалити учасника з витратами. Спробуйте деактивувати.';
+  String get cannotDeleteParticipantHasData =>
+      'Неможливо видалити учасника з витратами. Спробуйте деактивувати.';
 
   @override
   String get duplicateParticipantName => 'Учасник з таким ім\'ям вже існує';
@@ -161,7 +162,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get nothingToSettle => 'Нічого розраховувати';
 
   @override
-  String get pays => 'платить';
+  String get pays => 'борг';
+
+  @override
+  String get currentlyOwes => 'Актуальний борг';
 
   @override
   String get balanceWarning => 'Увага: сума балансів відхиляється від нуля';
@@ -224,6 +228,35 @@ class AppLocalizationsUk extends AppLocalizations {
   String get noSettlements => 'Немає розрахунків';
 
   @override
+  String get noSettlementsHint =>
+      'Немає розрахунків.\nНатисніть + щоб зафіксувати погашення боргу.';
+
+  @override
+  String get settlementsEmptyExplainer =>
+      'Розрахунки фіксують погашення боргів між учасниками. Коли хтось повертає борг — зафіксуйте це тут.';
+
+  @override
+  String get createFirstGroupTitle => 'Ласкаво просимо до Кошика!';
+
+  @override
+  String get createFirstGroupSubtitle =>
+      'Створіть першу групу, щоб відстежувати спільні витрати';
+
+  @override
+  String get noCategoriesHint =>
+      'Тут можна змінити існуючі категорії,\nдодати нові.';
+
+  @override
+  String get onboardingCategoriesHint =>
+      'Тут можна змінити існуючі категорії,\nдодати нові.\nАле це можна зробити і згодом.';
+
+  @override
+  String get minOneCategoryRequired => 'Має бути хоча б одна категорія';
+
+  @override
+  String get equalSharingInfo => 'Витрати діляться порівну між учасниками';
+
+  @override
   String get groupSettings => 'Налаштування групи';
 
   @override
@@ -231,4 +264,148 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get inactive => '(неактивний)';
+
+  @override
+  String get whoOwesWhom => 'Хто-Кому-Скільки';
+
+  @override
+  String get shareTitle => 'Підсумок Кошик';
+
+  @override
+  String get spendingByCategory => 'Витрати за категоріями';
+
+  @override
+  String get exitAppTitle => 'Вийти з додатку';
+
+  @override
+  String get exitAppConfirm => 'Ви впевнені, що хочете вийти?';
+
+  @override
+  String get exitApp => 'Вийти';
+
+  @override
+  String get groupArchived => 'Групу архівовано';
+
+  @override
+  String get groupUnarchived => 'Групу розархівовано';
+
+  @override
+  String get archivedGroups => 'АРХІВ';
+
+  @override
+  String get roundingEnabled => 'Заокруглювати суми до цілих';
+
+  @override
+  String get nextStep => 'Далі';
+
+  @override
+  String get expenseTitle => 'Назва (необов\'язково)';
+
+  @override
+  String get noExpensesHint =>
+      'Ще немає витрат.\nНатисніть + щоб додати першу.';
+
+  @override
+  String get done => 'Готово';
+
+  @override
+  String get categoryIcon => 'Іконка (емодзі)';
+
+  @override
+  String get categoryColor => 'Колір';
+
+  @override
+  String get cannotDeleteCategoryInUse =>
+      'Неможливо видалити категорію, що використовується у витратах';
+
+  @override
+  String get duplicateCategoryName => 'А вже є така категорія!';
+
+  @override
+  String get more => 'Більше';
+
+  @override
+  String get theme => 'Тема';
+
+  @override
+  String get aboutApp => 'Про додаток';
+
+  @override
+  String get onboardingStepGroup => 'Група';
+
+  @override
+  String get onboardingStepParticipants => 'Учасники';
+
+  @override
+  String get onboardingStepCategories => 'Категорії';
+
+  @override
+  String get defaultCategoryAccommodation => 'Проживання';
+
+  @override
+  String get defaultCategoryFood => 'Харчування';
+
+  @override
+  String get defaultCategoryWork => 'Транспорт';
+
+  @override
+  String get appTitleTagline => 'Кошик — рахує за тебе';
+
+  @override
+  String get appDescription =>
+      'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи учасників\n• Додавайте витрати з категоріями та платником\n• Підсумок: загальна сума, рівна частка, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Pie-діаграма витрат за категоріями\n• Підтримка світлої та темної теми';
+
+  @override
+  String get version => 'Версія';
+
+  @override
+  String get language => 'Мова';
+
+  @override
+  String get tutorialSkip => 'Розберусь';
+
+  @override
+  String get tutorialNext => 'Далі';
+
+  @override
+  String get tutorialGroupsFab => 'Натисніть + щоб створити нову групу';
+
+  @override
+  String get tutorialGroupsTile => 'створення груп/заходів для обліку витрат';
+
+  @override
+  String get tutorialExpensesFab => 'зазначайте витрати групи саме тут';
+
+  @override
+  String get tutorialSettlementsFab =>
+      'Натисніть + щоб зафіксувати розрахунок між учасниками';
+
+  @override
+  String get tutorialSummaryTab => 'аналітика витрат та боргів групи';
+
+  @override
+  String get tutorialMoreTab =>
+      'Більше — налаштування теми, мови та інформація про додаток';
+
+  @override
+  String get tutorialNavExpenses =>
+      'Тут відстежуйте всі спільні витрати. Натисніть + щоб додати нову.';
+
+  @override
+  String get tutorialNavSummary =>
+      'Загальна сума витрат, хто кому винен та розбивка по категоріях.';
+
+  @override
+  String get tutorialNavSettlements =>
+      'Фіксуйте погашення боргів між учасниками групи.';
+
+  @override
+  String get tutorialNavMore =>
+      'Налаштування: тема, мова, валюта та інформація про додаток.';
+
+  @override
+  String get checkForUpdates => 'Перевірити оновлення';
+
+  @override
+  String get upToDate => 'Встановлена остання версія ✓';
 }

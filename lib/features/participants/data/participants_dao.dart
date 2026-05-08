@@ -30,6 +30,9 @@ class ParticipantsDao extends DatabaseAccessor<AppDatabase>
   Future<void> updateParticipant(Participant entry) =>
       update(participants).replace(entry);
 
+  Future<int> deleteParticipant(int id) =>
+      (delete(participants)..where((t) => t.id.equals(id))).go();
+
   Future<bool> nameExistsInGroup(String name, int groupId,
       {int? excludeId}) async {
     final query = select(participants)

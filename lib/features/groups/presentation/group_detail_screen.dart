@@ -1,3 +1,4 @@
+import '../../../core/widgets/gradient_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -41,13 +42,13 @@ class GroupDetailScreen extends ConsumerWidget {
     final groupAsync = ref.watch(groupByIdProvider(groupId));
 
     return groupAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text('$e'))),
+      loading: () => const GradientScaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => GradientScaffold(body: Center(child: Text('$e'))),
       data: (group) {
         if (group == null) {
-          return const Scaffold(body: Center(child: Text('Not found')));
+          return const GradientScaffold(body: Center(child: Text('Not found')));
         }
-        return Scaffold(
+        return GradientScaffold(
           appBar: AppBar(
             title: Text(group.name),
             actions: [
@@ -88,11 +89,7 @@ class GroupDetailScreen extends ConsumerWidget {
                 label: l.summary,
                 onTap: () => context.push('/group/$groupId/summary'),
               ),
-              _NavTile(
-                icon: Icons.bar_chart,
-                label: l.analytics,
-                onTap: () => context.push('/group/$groupId/analytics'),
-              ),
+              // Analytics removed — now integrated as pie chart in Summary
             ],
           ),
         );

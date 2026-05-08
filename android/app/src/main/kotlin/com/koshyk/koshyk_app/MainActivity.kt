@@ -1,4 +1,4 @@
-package com.koshyk.koshyk_app
+package com.koshyk
 
 import io.flutter.embedding.android.FlutterActivity
 

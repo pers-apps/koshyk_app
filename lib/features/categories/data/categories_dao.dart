@@ -4,7 +4,7 @@ import '../../../core/db/tables.dart';
 
 part 'categories_dao.g.dart';
 
-@DriftAccessor(tables: [Categories])
+@DriftAccessor(tables: [Categories, Expenses])
 class CategoriesDao extends DatabaseAccessor<AppDatabase>
     with _$CategoriesDaoMixin {
   CategoriesDao(super.db);
@@ -29,5 +29,25 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
           ..where((t) => t.groupId.equals(groupId)))
         .get();
     return count.length;
+  }
+
+  Future<bool> nameExistsInGroup(String name, int groupId,
+      {int? excludeId}) async {
+    final query = select(categories)
+      ..where((t) {
+        final base = t.groupId.equals(groupId) &
+            t.name.lower().equals(name.toLowerCase());
+        if (excludeId != null) return base & t.id.equals(excludeId).not();
+        return base;
+      });
+    return (await query.getSingleOrNull()) != null;
+  }
+
+  Future<bool> isUsedInExpenses(int categoryId) async {
+    final result = await (select(expenses)
+          ..where((t) => t.categoryId.equals(categoryId))
+          ..limit(1))
+        .get();
+    return result.isNotEmpty;
   }
 }

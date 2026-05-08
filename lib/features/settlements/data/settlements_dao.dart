@@ -32,6 +32,13 @@ class SettlementsDao extends DatabaseAccessor<AppDatabase>
     return query.get();
   }
 
+  Future<int> countByGroup(int groupId) async {
+    final result = await (select(directSettlements)
+          ..where((t) => t.groupId.equals(groupId)))
+        .get();
+    return result.length;
+  }
+
   Future<int> insertSettlement(DirectSettlementsCompanion entry) =>
       into(directSettlements).insert(entry);
 
@@ -45,7 +52,8 @@ class SettlementsDao extends DatabaseAccessor<AppDatabase>
     final result = await (select(directSettlements)
           ..where((t) =>
               t.fromParticipantId.equals(participantId) |
-              t.toParticipantId.equals(participantId)))
+              t.toParticipantId.equals(participantId))
+          ..limit(1))
         .getSingleOrNull();
     return result != null;
   }

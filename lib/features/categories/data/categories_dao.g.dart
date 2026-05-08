@@ -6,6 +6,8 @@ part of 'categories_dao.dart';
 mixin _$CategoriesDaoMixin on DatabaseAccessor<AppDatabase> {
   $GroupsTable get groups => attachedDatabase.groups;
   $CategoriesTable get categories => attachedDatabase.categories;
+  $ParticipantsTable get participants => attachedDatabase.participants;
+  $ExpensesTable get expenses => attachedDatabase.expenses;
   CategoriesDaoManager get managers => CategoriesDaoManager(this);
 }
 
@@ -16,4 +18,8 @@ class CategoriesDaoManager {
       $$GroupsTableTableManager(_db.attachedDatabase, _db.groups);
   $$CategoriesTableTableManager get categories =>
       $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
+  $$ParticipantsTableTableManager get participants =>
+      $$ParticipantsTableTableManager(_db.attachedDatabase, _db.participants);
+  $$ExpensesTableTableManager get expenses =>
+      $$ExpensesTableTableManager(_db.attachedDatabase, _db.expenses);
 }

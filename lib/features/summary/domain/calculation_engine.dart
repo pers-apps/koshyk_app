@@ -74,8 +74,22 @@ GroupSummary calculateSummary({
     expenses.fold<double>(0, (s, e) => s + e.amountKop / 100.0),
   );
 
-  // Equal share per person
+  // Equal share per person (display value)
   final equalShare = n > 0 ? _round2(totalShared / n) : 0.0;
+
+  // Per-participant shares: distribute rounding remainder to last participant
+  // so sum(shares) == totalShared exactly and balance sum is always 0.
+  final baseShare = equalShare;
+  double assignedSoFar = 0;
+  final perPersonShare = <int, double>{};
+  for (int i = 0; i < n; i++) {
+    if (i < n - 1) {
+      perPersonShare[participants[i].id] = baseShare;
+      assignedSoFar = _round2(assignedSoFar + baseShare);
+    } else {
+      perPersonShare[participants[i].id] = _round2(totalShared - assignedSoFar);
+    }
+  }
 
   // Amount paid per participant
   final paid = <int, double>{for (final p in participants) p.id: 0.0};
@@ -83,19 +97,22 @@ GroupSummary calculateSummary({
     paid[e.payerId] = (paid[e.payerId] ?? 0) + e.amountKop / 100.0;
   }
 
-  // Transfer net per participant: received - sent
+  // Transfer net per participant:
+  // from (payer/debtor) sent money → their balance goes up (less negative)
+  // to (receiver/creditor) received money → their balance goes down (less positive)
   final transferNet = <int, double>{for (final p in participants) p.id: 0.0};
   for (final s in directSettlements) {
     transferNet[s.fromParticipantId] =
-        (transferNet[s.fromParticipantId] ?? 0) - s.amountKop / 100.0;
+        (transferNet[s.fromParticipantId] ?? 0) + s.amountKop / 100.0;
     transferNet[s.toParticipantId] =
-        (transferNet[s.toParticipantId] ?? 0) + s.amountKop / 100.0;
+        (transferNet[s.toParticipantId] ?? 0) - s.amountKop / 100.0;
   }
 
   // Build per-participant summaries
   final summaries = participants.map((p) {
     final ap = _round2(paid[p.id] ?? 0);
-    final raw = _round2(ap - equalShare);
+    final share = perPersonShare[p.id] ?? baseShare;
+    final raw = _round2(ap - share);
     final tn = _round2(transferNet[p.id] ?? 0);
     final fb = _round2(raw + tn);
     return ParticipantSummary(

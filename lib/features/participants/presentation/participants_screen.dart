@@ -1,32 +1,83 @@
+import '../../../core/widgets/gradient_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/db/database.dart';
 import '../data/participants_providers.dart';
 import '../../expenses/data/expenses_providers.dart';
 import '../../settlements/data/settlements_providers.dart';
-
+import '../../groups/data/groups_providers.dart';
+import '../../../core/utils/pastel_colors.dart';
+import '../../../core/widgets/onboarding_progress_bar.dart';
 class ParticipantsScreen extends ConsumerWidget {
   final int groupId;
-  const ParticipantsScreen({super.key, required this.groupId});
+  final bool isOnboarding;
+  const ParticipantsScreen({
+    super.key,
+    required this.groupId,
+    this.isOnboarding = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final asyncList = ref.watch(participantsStreamProvider(groupId));
+    final groupName = ref.watch(groupStreamByIdProvider(groupId)).maybeWhen(
+      data: (g) => g?.name ?? '',
+      orElse: () => '',
+    );
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.participants)),
+    return GradientScaffold(
+      appBar: AppBar(
+        title: Text(groupName.isNotEmpty ? '$groupName — ${l.participants}' : l.participants),
+        actions: isOnboarding
+            ? [
+                TextButton(
+                  onPressed: () =>
+                      context.push('/group/$groupId/categories'),
+                  child: Text(l.nextStep,
+                      style: const TextStyle(color: Colors.white)),
+                ),
+              ]
+            : null,
+      ),
+      bottomNavigationBar: isOnboarding
+          ? const OnboardingProgressBar(currentStep: 1)
+          : null,
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
-        data: (list) => ListView.builder(
-          itemCount: list.length,
-          itemBuilder: (ctx, i) => _ParticipantTile(
-            participant: list[i],
-            groupId: groupId,
-          ),
-        ),
+        data: (list) {
+          final colorMap = buildParticipantColors(
+              list.map((p) => MapEntry(p.id, p.name)).toList());
+          return list.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('👥', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 12),
+                      Text(
+                        l.addParticipant,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (ctx, i) => _ParticipantTile(
+                    participant: list[i],
+                    groupId: groupId,
+                    pastelColor: colorMap[list[i].id] ?? kPastelColors[0],
+                  ),
+                );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(context, ref, null),
@@ -51,7 +102,12 @@ class ParticipantsScreen extends ConsumerWidget {
 class _ParticipantTile extends ConsumerWidget {
   final Participant participant;
   final int groupId;
-  const _ParticipantTile({required this.participant, required this.groupId});
+  final Color pastelColor;
+  const _ParticipantTile({
+    required this.participant,
+    required this.groupId,
+    required this.pastelColor,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,8 +116,14 @@ class _ParticipantTile extends ConsumerWidget {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: isActive ? null : Colors.grey,
-        child: Text(participant.name.substring(0, 1).toUpperCase()),
+        backgroundColor: isActive ? pastelColor : Colors.grey.shade300,
+        child: Text(
+          participant.name.substring(0, 1).toUpperCase(),
+          style: TextStyle(
+            color: isActive ? Colors.black87 : Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       title: Text(
         participant.name + (isActive ? '' : ' ${l.inactive}'),
@@ -113,7 +175,7 @@ class _ParticipantTile extends ConsumerWidget {
             SnackBar(content: Text(l.cannotDeleteParticipantHasData)));
         return;
       }
-      await dao.updateParticipant(participant.copyWith(isActive: false));
+      await dao.deleteParticipant(participant.id);
       if (context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l.deleted)));

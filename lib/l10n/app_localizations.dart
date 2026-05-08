@@ -62,7 +62,8 @@ import 'app_localizations_uk.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('uk')
+    Locale('uk'),
   ];
 
   /// No description provided for @appTitle.
@@ -398,8 +401,14 @@ abstract class AppLocalizations {
   /// No description provided for @pays.
   ///
   /// In uk, this message translates to:
-  /// **'платить'**
+  /// **'борг'**
   String get pays;
+
+  /// No description provided for @currentlyOwes.
+  ///
+  /// In uk, this message translates to:
+  /// **'Актуальний борг'**
+  String get currentlyOwes;
 
   /// No description provided for @balanceWarning.
   ///
@@ -521,6 +530,54 @@ abstract class AppLocalizations {
   /// **'Немає розрахунків'**
   String get noSettlements;
 
+  /// No description provided for @noSettlementsHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Немає розрахунків.\nНатисніть + щоб зафіксувати погашення боргу.'**
+  String get noSettlementsHint;
+
+  /// No description provided for @settlementsEmptyExplainer.
+  ///
+  /// In uk, this message translates to:
+  /// **'Розрахунки фіксують погашення боргів між учасниками. Коли хтось повертає борг — зафіксуйте це тут.'**
+  String get settlementsEmptyExplainer;
+
+  /// No description provided for @createFirstGroupTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ласкаво просимо до Кошика!'**
+  String get createFirstGroupTitle;
+
+  /// No description provided for @createFirstGroupSubtitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Створіть першу групу, щоб відстежувати спільні витрати'**
+  String get createFirstGroupSubtitle;
+
+  /// No description provided for @noCategoriesHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тут можна змінити існуючі категорії,\nдодати нові.'**
+  String get noCategoriesHint;
+
+  /// No description provided for @onboardingCategoriesHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тут можна змінити існуючі категорії,\nдодати нові.\nАле це можна зробити і згодом.'**
+  String get onboardingCategoriesHint;
+
+  /// No description provided for @minOneCategoryRequired.
+  ///
+  /// In uk, this message translates to:
+  /// **'Має бути хоча б одна категорія'**
+  String get minOneCategoryRequired;
+
+  /// No description provided for @equalSharingInfo.
+  ///
+  /// In uk, this message translates to:
+  /// **'Витрати діляться порівну між учасниками'**
+  String get equalSharingInfo;
+
   /// No description provided for @groupSettings.
   ///
   /// In uk, this message translates to:
@@ -538,9 +595,280 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'(неактивний)'**
   String get inactive;
+
+  /// No description provided for @whoOwesWhom.
+  ///
+  /// In uk, this message translates to:
+  /// **'Хто-Кому-Скільки'**
+  String get whoOwesWhom;
+
+  /// No description provided for @shareTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Підсумок Кошик'**
+  String get shareTitle;
+
+  /// No description provided for @spendingByCategory.
+  ///
+  /// In uk, this message translates to:
+  /// **'Витрати за категоріями'**
+  String get spendingByCategory;
+
+  /// No description provided for @exitAppTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вийти з додатку'**
+  String get exitAppTitle;
+
+  /// No description provided for @exitAppConfirm.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ви впевнені, що хочете вийти?'**
+  String get exitAppConfirm;
+
+  /// No description provided for @exitApp.
+  ///
+  /// In uk, this message translates to:
+  /// **'Вийти'**
+  String get exitApp;
+
+  /// No description provided for @groupArchived.
+  ///
+  /// In uk, this message translates to:
+  /// **'Групу архівовано'**
+  String get groupArchived;
+
+  /// No description provided for @groupUnarchived.
+  ///
+  /// In uk, this message translates to:
+  /// **'Групу розархівовано'**
+  String get groupUnarchived;
+
+  /// No description provided for @archivedGroups.
+  ///
+  /// In uk, this message translates to:
+  /// **'АРХІВ'**
+  String get archivedGroups;
+
+  /// No description provided for @roundingEnabled.
+  ///
+  /// In uk, this message translates to:
+  /// **'Заокруглювати суми до цілих'**
+  String get roundingEnabled;
+
+  /// No description provided for @nextStep.
+  ///
+  /// In uk, this message translates to:
+  /// **'Далі'**
+  String get nextStep;
+
+  /// No description provided for @expenseTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Назва (необов\'язково)'**
+  String get expenseTitle;
+
+  /// No description provided for @noExpensesHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Ще немає витрат.\nНатисніть + щоб додати першу.'**
+  String get noExpensesHint;
+
+  /// No description provided for @done.
+  ///
+  /// In uk, this message translates to:
+  /// **'Готово'**
+  String get done;
+
+  /// No description provided for @categoryIcon.
+  ///
+  /// In uk, this message translates to:
+  /// **'Іконка (емодзі)'**
+  String get categoryIcon;
+
+  /// No description provided for @categoryColor.
+  ///
+  /// In uk, this message translates to:
+  /// **'Колір'**
+  String get categoryColor;
+
+  /// No description provided for @cannotDeleteCategoryInUse.
+  ///
+  /// In uk, this message translates to:
+  /// **'Неможливо видалити категорію, що використовується у витратах'**
+  String get cannotDeleteCategoryInUse;
+
+  /// No description provided for @duplicateCategoryName.
+  ///
+  /// In uk, this message translates to:
+  /// **'А вже є така категорія!'**
+  String get duplicateCategoryName;
+
+  /// No description provided for @more.
+  ///
+  /// In uk, this message translates to:
+  /// **'Більше'**
+  String get more;
+
+  /// No description provided for @theme.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тема'**
+  String get theme;
+
+  /// No description provided for @aboutApp.
+  ///
+  /// In uk, this message translates to:
+  /// **'Про додаток'**
+  String get aboutApp;
+
+  /// No description provided for @onboardingStepGroup.
+  ///
+  /// In uk, this message translates to:
+  /// **'Група'**
+  String get onboardingStepGroup;
+
+  /// No description provided for @onboardingStepParticipants.
+  ///
+  /// In uk, this message translates to:
+  /// **'Учасники'**
+  String get onboardingStepParticipants;
+
+  /// No description provided for @onboardingStepCategories.
+  ///
+  /// In uk, this message translates to:
+  /// **'Категорії'**
+  String get onboardingStepCategories;
+
+  /// No description provided for @defaultCategoryAccommodation.
+  ///
+  /// In uk, this message translates to:
+  /// **'Проживання'**
+  String get defaultCategoryAccommodation;
+
+  /// No description provided for @defaultCategoryFood.
+  ///
+  /// In uk, this message translates to:
+  /// **'Харчування'**
+  String get defaultCategoryFood;
+
+  /// No description provided for @defaultCategoryWork.
+  ///
+  /// In uk, this message translates to:
+  /// **'Транспорт'**
+  String get defaultCategoryWork;
+
+  /// No description provided for @appTitleTagline.
+  ///
+  /// In uk, this message translates to:
+  /// **'Кошик — рахує за тебе'**
+  String get appTitleTagline;
+
+  /// No description provided for @appDescription.
+  ///
+  /// In uk, this message translates to:
+  /// **'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи учасників\n• Додавайте витрати з категоріями та платником\n• Підсумок: загальна сума, рівна частка, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Pie-діаграма витрат за категоріями\n• Підтримка світлої та темної теми'**
+  String get appDescription;
+
+  /// No description provided for @version.
+  ///
+  /// In uk, this message translates to:
+  /// **'Версія'**
+  String get version;
+
+  /// No description provided for @language.
+  ///
+  /// In uk, this message translates to:
+  /// **'Мова'**
+  String get language;
+
+  /// No description provided for @tutorialSkip.
+  ///
+  /// In uk, this message translates to:
+  /// **'Розберусь'**
+  String get tutorialSkip;
+
+  /// No description provided for @tutorialNext.
+  ///
+  /// In uk, this message translates to:
+  /// **'Далі'**
+  String get tutorialNext;
+
+  /// No description provided for @tutorialGroupsFab.
+  ///
+  /// In uk, this message translates to:
+  /// **'Натисніть + щоб створити нову групу'**
+  String get tutorialGroupsFab;
+
+  /// No description provided for @tutorialGroupsTile.
+  ///
+  /// In uk, this message translates to:
+  /// **'створення груп/заходів для обліку витрат'**
+  String get tutorialGroupsTile;
+
+  /// No description provided for @tutorialExpensesFab.
+  ///
+  /// In uk, this message translates to:
+  /// **'зазначайте витрати групи саме тут'**
+  String get tutorialExpensesFab;
+
+  /// No description provided for @tutorialSettlementsFab.
+  ///
+  /// In uk, this message translates to:
+  /// **'Натисніть + щоб зафіксувати розрахунок між учасниками'**
+  String get tutorialSettlementsFab;
+
+  /// No description provided for @tutorialSummaryTab.
+  ///
+  /// In uk, this message translates to:
+  /// **'аналітика витрат та боргів групи'**
+  String get tutorialSummaryTab;
+
+  /// No description provided for @tutorialMoreTab.
+  ///
+  /// In uk, this message translates to:
+  /// **'Більше — налаштування теми, мови та інформація про додаток'**
+  String get tutorialMoreTab;
+
+  /// No description provided for @tutorialNavExpenses.
+  ///
+  /// In uk, this message translates to:
+  /// **'Тут відстежуйте всі спільні витрати. Натисніть + щоб додати нову.'**
+  String get tutorialNavExpenses;
+
+  /// No description provided for @tutorialNavSummary.
+  ///
+  /// In uk, this message translates to:
+  /// **'Загальна сума витрат, хто кому винен та розбивка по категоріях.'**
+  String get tutorialNavSummary;
+
+  /// No description provided for @tutorialNavSettlements.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фіксуйте погашення боргів між учасниками групи.'**
+  String get tutorialNavSettlements;
+
+  /// No description provided for @tutorialNavMore.
+  ///
+  /// In uk, this message translates to:
+  /// **'Налаштування: тема, мова, валюта та інформація про додаток.'**
+  String get tutorialNavMore;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In uk, this message translates to:
+  /// **'Перевірити оновлення'**
+  String get checkForUpdates;
+
+  /// No description provided for @upToDate.
+  ///
+  /// In uk, this message translates to:
+  /// **'Встановлена остання версія ✓'**
+  String get upToDate;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -549,25 +877,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'uk'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'uk'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'uk': return AppLocalizationsUk();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'uk':
+      return AppLocalizationsUk();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

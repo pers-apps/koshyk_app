@@ -10,14 +10,46 @@ class GroupsDao extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
 
   Stream<List<Group>> watchAll() => select(groups).watch();
 
+  Stream<List<Group>> watchActive() =>
+      (select(groups)..where((t) => t.isArchived.equals(false))).watch();
+
+  Stream<List<Group>> watchArchived() =>
+      (select(groups)..where((t) => t.isArchived.equals(true))).watch();
+
   Future<Group?> getById(int id) =>
       (select(groups)..where((t) => t.id.equals(id))).getSingleOrNull();
+
+  Stream<Group?> watchById(int id) =>
+      (select(groups)..where((t) => t.id.equals(id))).watchSingleOrNull();
+
+  Future<int> countActive() async {
+    final result = await (select(groups)
+          ..where((t) => t.isArchived.equals(false)))
+        .get();
+    return result.length;
+  }
+
+  Future<int> countAll() async {
+    final result = await select(groups).get();
+    return result.length;
+  }
 
   Future<int> insertGroup(GroupsCompanion entry) =>
       into(groups).insert(entry);
 
   Future<void> updateGroup(Group entry) =>
       update(groups).replace(entry);
+
+  Future<void> updateCurrency(int id, String symbol) =>
+      (update(groups)..where((t) => t.id.equals(id)))
+          .write(GroupsCompanion(currencySymbol: Value(symbol)));
+
+  Future<void> updateCurrencyAll(String symbol) =>
+      update(groups).write(GroupsCompanion(currencySymbol: Value(symbol)));
+
+  Future<void> archiveGroup(int id, {bool archive = true}) =>
+      (update(groups)..where((t) => t.id.equals(id)))
+          .write(GroupsCompanion(isArchived: Value(archive)));
 
   Future<int> deleteGroup(int id) =>
       (delete(groups)..where((t) => t.id.equals(id))).go();

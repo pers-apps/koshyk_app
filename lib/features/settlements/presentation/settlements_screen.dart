@@ -1,3 +1,5 @@
+import '../../../core/widgets/gradient_scaffold.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../../core/utils/money.dart';
 import '../data/settlements_providers.dart';
 import '../../participants/data/participants_providers.dart';
 import '../../categories/data/categories_providers.dart';
+import '../../groups/data/groups_providers.dart';
 
 class SettlementsScreen extends ConsumerWidget {
   final int groupId;
@@ -19,6 +22,7 @@ class SettlementsScreen extends ConsumerWidget {
     final asyncList = ref.watch(settlementsStreamProvider(groupId));
     final asyncParticipants = ref.watch(participantsStreamProvider(groupId));
     final asyncCategories = ref.watch(categoriesStreamProvider(groupId));
+    final groupAsync = ref.watch(groupStreamByIdProvider(groupId));
 
     final participants = asyncParticipants.maybeWhen(
       data: (list) => {for (final p in list) p.id: p.name},
@@ -28,44 +32,170 @@ class SettlementsScreen extends ConsumerWidget {
       data: (list) => {for (final c in list) c.id: c.name},
       orElse: () => <int, String>{},
     );
+    final groupName = groupAsync.maybeWhen(
+      data: (g) => g?.name ?? '',
+      orElse: () => '',
+    );
+    final roundAmounts = groupAsync.maybeWhen(
+      data: (g) => g?.roundAmounts ?? true,
+      orElse: () => true,
+    );
+    final currency = groupAsync.maybeWhen(
+      data: (g) => g?.currencySymbol ?? '₴',
+      orElse: () => '₴',
+    );
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.settlements)),
-      body: asyncList.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
-        data: (list) {
-          if (list.isEmpty) return Center(child: Text(l.noSettlements));
-          return ListView.builder(
-            itemCount: list.length,
-            itemBuilder: (ctx, i) => _SettlementTile(
-              settlement: list[i],
-              groupId: groupId,
-              participants: participants,
-              categories: categories,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) { if (context.mounted) context.go('/'); },
+      child: GradientScaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
+          tooltip: 'Groups',
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset('assets/logo.png', width: 28, height: 28),
             ),
-          );
-        },
+            const SizedBox(width: 8),
+            Flexible(child: Text(groupName.isNotEmpty ? '$groupName — ${l.settlements}' : l.settlements)),
+          ],
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (val) {
+              switch (val) {
+                case 'participants':
+                  context.push('/group/$groupId/participants');
+                case 'categories':
+                  context.push('/group/$groupId/categories');
+                case 'edit':
+                  context.push('/group/$groupId/edit');
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'participants', child: Text(l.participants)),
+              PopupMenuItem(value: 'categories', child: Text(l.categories)),
+              const PopupMenuDivider(),
+              PopupMenuItem(value: 'edit', child: Text(l.editGroup)),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/group/$groupId/settlements/new'),
-        child: const Icon(Icons.add),
+      body: Column(
+        children: [
+          // List
+          Expanded(
+            child: asyncList.when(
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('$e')),
+              data: (list) {
+                if (list.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🤝', style: const TextStyle(fontSize: 56)),
+                          const SizedBox(height: 16),
+                          Text(
+                            l.noSettlementsHint,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          OutlinedButton.icon(
+                            onPressed: () => context.push('/group/$groupId/expenses/new'),
+                            icon: const Icon(Icons.add),
+                            label: Text(l.addExpense),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (ctx, i) => _SettlementTile(
+                    settlement: list[i],
+                    groupId: groupId,
+                    participants: participants,
+                    categories: categories,
+                    roundAmounts: roundAmounts,
+                    currency: currency,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: _GlowFab(
+        onTap: () => context.push('/group/$groupId/settlements/new'),
+      ),
+      bottomNavigationBar: AppBottomNav(currentIndex: 2, groupId: groupId),
       ),
     );
   }
 }
+
+
+// ── Glow FAB ──────────────────────────────────────────────────────────────────
+
+class _GlowFab extends StatelessWidget {
+  final VoidCallback onTap;
+  const _GlowFab({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.45),
+            blurRadius: 18,
+            spreadRadius: 3,
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: onTap,
+        child: const Icon(Icons.add, size: 28),
+      ),
+    );
+  }
+}
+
+// ── Settlement tile ───────────────────────────────────────────────────────────
 
 class _SettlementTile extends ConsumerWidget {
   final DirectSettlement settlement;
   final int groupId;
   final Map<int, String> participants;
   final Map<int, String> categories;
+  final bool roundAmounts;
+  final String currency;
 
   const _SettlementTile({
     required this.settlement,
     required this.groupId,
     required this.participants,
     required this.categories,
+    required this.roundAmounts,
+    required this.currency,
   });
 
   @override
@@ -114,9 +244,13 @@ class _SettlementTile extends ConsumerWidget {
         }
       },
       child: ListTile(
-        leading: const Icon(Icons.swap_horiz),
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+          child: Icon(Icons.swap_horiz, color: Theme.of(context).colorScheme.primary, size: 22),
+        ),
         title: Text(
-          '$from → $to: ${formatMoney(settlement.amountKop)}',
+          '$from → $to: ${formatMoney(settlement.amountKop, symbol: currency, round: roundAmounts)}',
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
         subtitle: Text([

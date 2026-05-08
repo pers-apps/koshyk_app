@@ -2,7 +2,7 @@ name: koshyk_app
 description: "Koshyk - Expense Splitter App"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.9+10
 
 environment:
   sdk: ^3.7.2
@@ -25,12 +25,25 @@ dependencies:
   # Charts
   fl_chart: ^0.69.0
   # Localisation
-  intl: ^0.19.0
+  intl: ^0.20.2
   # CSV export / sharing
   share_plus: ^10.1.4
   # Arithmetic expression evaluator
   math_expressions: ^2.6.0
+  # Typography
+  google_fonts: ^6.2.1
+  # App version info
+  package_info_plus: ^8.0.0
   path: ^1.9.1
+  drift_flutter: ^0.2.8
+  # Update checker
+  upgrader: ^11.4.0
+  # In-app purchases — disabled for v1.0 (Phase 1: free launch)
+  # in_app_purchase: ^3.2.0
+  # Preferences persistence
+  shared_preferences: ^2.3.0
+  # Tutorial overlay
+  tutorial_coach_mark: ^1.2.11
 
 dev_dependencies:
   flutter_test:
@@ -40,4 +53,7 @@ dev_dependencies:
   build_runner: ^2.4.0
 
 flutter:
+  generate: true
   uses-material-design: true
+  assets:
+    - assets/logo.png

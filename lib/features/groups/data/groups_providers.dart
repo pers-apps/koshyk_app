@@ -11,7 +11,20 @@ final groupsStreamProvider = StreamProvider<List<Group>>((ref) {
   return ref.watch(groupsDaoProvider).watchAll();
 });
 
+final activeGroupsStreamProvider = StreamProvider<List<Group>>((ref) {
+  return ref.watch(groupsDaoProvider).watchActive();
+});
+
+final archivedGroupsStreamProvider = StreamProvider<List<Group>>((ref) {
+  return ref.watch(groupsDaoProvider).watchArchived();
+});
+
 final groupByIdProvider =
     FutureProvider.family<Group?, int>((ref, id) async {
   return ref.watch(groupsDaoProvider).getById(id);
+});
+
+final groupStreamByIdProvider =
+    StreamProvider.family<Group?, int>((ref, id) {
+  return ref.watch(groupsDaoProvider).watchById(id);
 });

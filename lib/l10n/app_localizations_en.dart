@@ -62,10 +62,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteParticipant => 'Delete participant';
 
   @override
-  String get cannotDeleteParticipantHasData => 'Cannot delete participant with expenses. Try deactivating instead.';
+  String get cannotDeleteParticipantHasData =>
+      'Cannot delete participant with expenses. Try deactivating instead.';
 
   @override
-  String get duplicateParticipantName => 'A participant with this name already exists';
+  String get duplicateParticipantName =>
+      'A participant with this name already exists';
 
   @override
   String get categories => 'Categories';
@@ -161,7 +163,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nothingToSettle => 'Nothing to settle';
 
   @override
-  String get pays => 'pays';
+  String get pays => 'debt';
+
+  @override
+  String get currentlyOwes => 'Current debt';
 
   @override
   String get balanceWarning => 'Warning: sum of balances deviates from zero';
@@ -224,6 +229,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSettlements => 'No settlements';
 
   @override
+  String get noSettlementsHint =>
+      'No settlements yet.\nTap + to record a debt repayment.';
+
+  @override
+  String get settlementsEmptyExplainer =>
+      'Settlements record debt repayments between group members. When someone pays back what they owe — record it here.';
+
+  @override
+  String get createFirstGroupTitle => 'Welcome to Koshyk!';
+
+  @override
+  String get createFirstGroupSubtitle =>
+      'Create your first group to start tracking shared expenses';
+
+  @override
+  String get noCategoriesHint =>
+      'Here you can change current categories\nor add new ones.';
+
+  @override
+  String get onboardingCategoriesHint =>
+      'Here you can change default categories,\nadd your own.\nThat can be done later too.';
+
+  @override
+  String get minOneCategoryRequired => 'At least one category must remain';
+
+  @override
+  String get equalSharingInfo =>
+      'Expenses are split equally among participants';
+
+  @override
   String get groupSettings => 'Group settings';
 
   @override
@@ -231,4 +266,147 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inactive => '(inactive)';
+
+  @override
+  String get whoOwesWhom => 'Who Owes Whom';
+
+  @override
+  String get shareTitle => 'Koshyk Summary';
+
+  @override
+  String get spendingByCategory => 'Spending by category';
+
+  @override
+  String get exitAppTitle => 'Exit app';
+
+  @override
+  String get exitAppConfirm => 'Are you sure you want to exit?';
+
+  @override
+  String get exitApp => 'Exit';
+
+  @override
+  String get groupArchived => 'Group archived';
+
+  @override
+  String get groupUnarchived => 'Group unarchived';
+
+  @override
+  String get archivedGroups => 'ARCHIVED';
+
+  @override
+  String get roundingEnabled => 'Round amounts to whole numbers';
+
+  @override
+  String get nextStep => 'Next';
+
+  @override
+  String get expenseTitle => 'Title (optional)';
+
+  @override
+  String get noExpensesHint => 'No expenses yet.\nTap + to add the first one.';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get categoryIcon => 'Icon (emoji)';
+
+  @override
+  String get categoryColor => 'Color';
+
+  @override
+  String get cannotDeleteCategoryInUse =>
+      'Cannot delete a category that is used in expenses';
+
+  @override
+  String get duplicateCategoryName => 'That\'s what we already have!';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get aboutApp => 'About App';
+
+  @override
+  String get onboardingStepGroup => 'Group';
+
+  @override
+  String get onboardingStepParticipants => 'Members';
+
+  @override
+  String get onboardingStepCategories => 'Categories';
+
+  @override
+  String get defaultCategoryAccommodation => 'Accommodation';
+
+  @override
+  String get defaultCategoryFood => 'Food';
+
+  @override
+  String get defaultCategoryWork => 'Transport';
+
+  @override
+  String get appTitleTagline => 'Koshyk — does the math for you';
+
+  @override
+  String get appDescription =>
+      'Koshyk is a mobile app for shared expense tracking in a group. Perfect for trips, shared living, and team events.\n\n• Create groups with participants\n• Add expenses with categories and payer\n• Summary: total amount, equal share, who owes whom\n• Settlements record debt repayments between members\n• Pie chart of expenses by category\n• Light and dark theme support';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get tutorialSkip => 'Got it';
+
+  @override
+  String get tutorialNext => 'Next';
+
+  @override
+  String get tutorialGroupsFab => 'Tap + to create a new group';
+
+  @override
+  String get tutorialGroupsTile =>
+      'Create groups or events to track shared expenses';
+
+  @override
+  String get tutorialExpensesFab => 'Add your group expenses right here';
+
+  @override
+  String get tutorialSettlementsFab =>
+      'Tap + to record a settlement between members';
+
+  @override
+  String get tutorialSummaryTab => 'Expense analytics and group debts';
+
+  @override
+  String get tutorialMoreTab => 'More — theme, language settings and app info';
+
+  @override
+  String get tutorialNavExpenses =>
+      'Track all shared expenses here. Tap + to add a new one.';
+
+  @override
+  String get tutorialNavSummary =>
+      'See total spending, who owes whom, and a breakdown by category.';
+
+  @override
+  String get tutorialNavSettlements =>
+      'Record debt repayments between group members.';
+
+  @override
+  String get tutorialNavMore =>
+      'Settings: theme, language, currency and app info.';
+
+  @override
+  String get checkForUpdates => 'Check for updates';
+
+  @override
+  String get upToDate => 'You have the latest version ✓';
 }

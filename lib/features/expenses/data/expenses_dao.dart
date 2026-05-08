@@ -34,6 +34,13 @@ class ExpensesDao extends DatabaseAccessor<AppDatabase>
     return query.get();
   }
 
+  Future<int> countByGroup(int groupId) async {
+    final result = await (select(expenses)
+          ..where((t) => t.groupId.equals(groupId)))
+        .get();
+    return result.length;
+  }
+
   Future<int> insertExpense(ExpensesCompanion entry) =>
       into(expenses).insert(entry);
 
@@ -45,9 +52,10 @@ class ExpensesDao extends DatabaseAccessor<AppDatabase>
 
   Future<bool> participantHasExpenses(int participantId) async {
     final result = await (select(expenses)
-          ..where((t) => t.payerId.equals(participantId)))
-        .getSingleOrNull();
-    return result != null;
+          ..where((t) => t.payerId.equals(participantId))
+          ..limit(1))
+        .get();
+    return result.isNotEmpty;
   }
 
   Future<void> nullifyCategoryExpenses(int categoryId) =>

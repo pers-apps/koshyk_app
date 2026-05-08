@@ -46,6 +46,36 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
     requiredDuringInsert: false,
     defaultValue: const Constant('₴'),
   );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _roundAmountsMeta = const VerificationMeta(
+    'roundAmounts',
+  );
+  @override
+  late final GeneratedColumn<bool> roundAmounts = GeneratedColumn<bool>(
+    'round_amounts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("round_amounts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -59,7 +89,14 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, name, currencySymbol, createdAt];
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    currencySymbol,
+    isArchived,
+    roundAmounts,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -89,6 +126,21 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
         currencySymbol.isAcceptableOrUnknown(
           data['currency_symbol']!,
           _currencySymbolMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('round_amounts')) {
+      context.handle(
+        _roundAmountsMeta,
+        roundAmounts.isAcceptableOrUnknown(
+          data['round_amounts']!,
+          _roundAmountsMeta,
         ),
       );
     }
@@ -122,6 +174,16 @@ class $GroupsTable extends Groups with TableInfo<$GroupsTable, Group> {
             DriftSqlType.string,
             data['${effectivePrefix}currency_symbol'],
           )!,
+      isArchived:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_archived'],
+          )!,
+      roundAmounts:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}round_amounts'],
+          )!,
       createdAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -140,11 +202,15 @@ class Group extends DataClass implements Insertable<Group> {
   final int id;
   final String name;
   final String currencySymbol;
+  final bool isArchived;
+  final bool roundAmounts;
   final DateTime createdAt;
   const Group({
     required this.id,
     required this.name,
     required this.currencySymbol,
+    required this.isArchived,
+    required this.roundAmounts,
     required this.createdAt,
   });
   @override
@@ -153,6 +219,8 @@ class Group extends DataClass implements Insertable<Group> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['currency_symbol'] = Variable<String>(currencySymbol);
+    map['is_archived'] = Variable<bool>(isArchived);
+    map['round_amounts'] = Variable<bool>(roundAmounts);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -162,6 +230,8 @@ class Group extends DataClass implements Insertable<Group> {
       id: Value(id),
       name: Value(name),
       currencySymbol: Value(currencySymbol),
+      isArchived: Value(isArchived),
+      roundAmounts: Value(roundAmounts),
       createdAt: Value(createdAt),
     );
   }
@@ -175,6 +245,8 @@ class Group extends DataClass implements Insertable<Group> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       currencySymbol: serializer.fromJson<String>(json['currencySymbol']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
+      roundAmounts: serializer.fromJson<bool>(json['roundAmounts']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -185,6 +257,8 @@ class Group extends DataClass implements Insertable<Group> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'currencySymbol': serializer.toJson<String>(currencySymbol),
+      'isArchived': serializer.toJson<bool>(isArchived),
+      'roundAmounts': serializer.toJson<bool>(roundAmounts),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -193,11 +267,15 @@ class Group extends DataClass implements Insertable<Group> {
     int? id,
     String? name,
     String? currencySymbol,
+    bool? isArchived,
+    bool? roundAmounts,
     DateTime? createdAt,
   }) => Group(
     id: id ?? this.id,
     name: name ?? this.name,
     currencySymbol: currencySymbol ?? this.currencySymbol,
+    isArchived: isArchived ?? this.isArchived,
+    roundAmounts: roundAmounts ?? this.roundAmounts,
     createdAt: createdAt ?? this.createdAt,
   );
   Group copyWithCompanion(GroupsCompanion data) {
@@ -208,6 +286,12 @@ class Group extends DataClass implements Insertable<Group> {
           data.currencySymbol.present
               ? data.currencySymbol.value
               : this.currencySymbol,
+      isArchived:
+          data.isArchived.present ? data.isArchived.value : this.isArchived,
+      roundAmounts:
+          data.roundAmounts.present
+              ? data.roundAmounts.value
+              : this.roundAmounts,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -218,13 +302,22 @@ class Group extends DataClass implements Insertable<Group> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('currencySymbol: $currencySymbol, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('roundAmounts: $roundAmounts, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, currencySymbol, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    currencySymbol,
+    isArchived,
+    roundAmounts,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -232,6 +325,8 @@ class Group extends DataClass implements Insertable<Group> {
           other.id == this.id &&
           other.name == this.name &&
           other.currencySymbol == this.currencySymbol &&
+          other.isArchived == this.isArchived &&
+          other.roundAmounts == this.roundAmounts &&
           other.createdAt == this.createdAt);
 }
 
@@ -239,29 +334,39 @@ class GroupsCompanion extends UpdateCompanion<Group> {
   final Value<int> id;
   final Value<String> name;
   final Value<String> currencySymbol;
+  final Value<bool> isArchived;
+  final Value<bool> roundAmounts;
   final Value<DateTime> createdAt;
   const GroupsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.currencySymbol = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.roundAmounts = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   GroupsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
     this.currencySymbol = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.roundAmounts = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name);
   static Insertable<Group> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? currencySymbol,
+    Expression<bool>? isArchived,
+    Expression<bool>? roundAmounts,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (currencySymbol != null) 'currency_symbol': currencySymbol,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (roundAmounts != null) 'round_amounts': roundAmounts,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -270,12 +375,16 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     Value<int>? id,
     Value<String>? name,
     Value<String>? currencySymbol,
+    Value<bool>? isArchived,
+    Value<bool>? roundAmounts,
     Value<DateTime>? createdAt,
   }) {
     return GroupsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       currencySymbol: currencySymbol ?? this.currencySymbol,
+      isArchived: isArchived ?? this.isArchived,
+      roundAmounts: roundAmounts ?? this.roundAmounts,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -292,6 +401,12 @@ class GroupsCompanion extends UpdateCompanion<Group> {
     if (currencySymbol.present) {
       map['currency_symbol'] = Variable<String>(currencySymbol.value);
     }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
+    }
+    if (roundAmounts.present) {
+      map['round_amounts'] = Variable<bool>(roundAmounts.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -304,6 +419,8 @@ class GroupsCompanion extends UpdateCompanion<Group> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('currencySymbol: $currencySymbol, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('roundAmounts: $roundAmounts, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -662,8 +779,28 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
   @override
-  List<GeneratedColumn> get $columns => [id, groupId, name];
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('🏷️'),
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0xFF2196F3),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, groupId, name, icon, color];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -695,6 +832,18 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
     return context;
   }
 
@@ -719,6 +868,16 @@ class $CategoriesTable extends Categories
             DriftSqlType.string,
             data['${effectivePrefix}name'],
           )!,
+      icon:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}icon'],
+          )!,
+      color:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}color'],
+          )!,
     );
   }
 
@@ -732,13 +891,23 @@ class Category extends DataClass implements Insertable<Category> {
   final int id;
   final int groupId;
   final String name;
-  const Category({required this.id, required this.groupId, required this.name});
+  final String icon;
+  final int color;
+  const Category({
+    required this.id,
+    required this.groupId,
+    required this.name,
+    required this.icon,
+    required this.color,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['group_id'] = Variable<int>(groupId);
     map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    map['color'] = Variable<int>(color);
     return map;
   }
 
@@ -747,6 +916,8 @@ class Category extends DataClass implements Insertable<Category> {
       id: Value(id),
       groupId: Value(groupId),
       name: Value(name),
+      icon: Value(icon),
+      color: Value(color),
     );
   }
 
@@ -759,6 +930,8 @@ class Category extends DataClass implements Insertable<Category> {
       id: serializer.fromJson<int>(json['id']),
       groupId: serializer.fromJson<int>(json['groupId']),
       name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      color: serializer.fromJson<int>(json['color']),
     );
   }
   @override
@@ -768,19 +941,31 @@ class Category extends DataClass implements Insertable<Category> {
       'id': serializer.toJson<int>(id),
       'groupId': serializer.toJson<int>(groupId),
       'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'color': serializer.toJson<int>(color),
     };
   }
 
-  Category copyWith({int? id, int? groupId, String? name}) => Category(
+  Category copyWith({
+    int? id,
+    int? groupId,
+    String? name,
+    String? icon,
+    int? color,
+  }) => Category(
     id: id ?? this.id,
     groupId: groupId ?? this.groupId,
     name: name ?? this.name,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
   );
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
       id: data.id.present ? data.id.value : this.id,
       groupId: data.groupId.present ? data.groupId.value : this.groupId,
       name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
     );
   }
 
@@ -789,46 +974,60 @@ class Category extends DataClass implements Insertable<Category> {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, groupId, name);
+  int get hashCode => Object.hash(id, groupId, name, icon, color);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
           other.groupId == this.groupId &&
-          other.name == this.name);
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.color == this.color);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
   final Value<int> groupId;
   final Value<String> name;
+  final Value<String> icon;
+  final Value<int> color;
   const CategoriesCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
     this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
     required int groupId,
     required String name,
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
   }) : groupId = Value(groupId),
        name = Value(name);
   static Insertable<Category> custom({
     Expression<int>? id,
     Expression<int>? groupId,
     Expression<String>? name,
+    Expression<String>? icon,
+    Expression<int>? color,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (groupId != null) 'group_id': groupId,
       if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
     });
   }
 
@@ -836,11 +1035,15 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<int>? id,
     Value<int>? groupId,
     Value<String>? name,
+    Value<String>? icon,
+    Value<int>? color,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
       name: name ?? this.name,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
     );
   }
 
@@ -856,6 +1059,12 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
     return map;
   }
 
@@ -864,7 +1073,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color')
           ..write(')'))
         .toString();
   }
@@ -941,6 +1152,16 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'REFERENCES categories (id)',
     ),
   );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   static const VerificationMeta _commentMeta = const VerificationMeta(
     'comment',
   );
@@ -969,6 +1190,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     payerId,
     amountKop,
     categoryId,
+    title,
     comment,
     date,
   ];
@@ -1015,6 +1237,12 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       context.handle(
         _categoryIdMeta,
         categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
       );
     }
     if (data.containsKey('comment')) {
@@ -1064,6 +1292,11 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.int,
         data['${effectivePrefix}category_id'],
       ),
+      title:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}title'],
+          )!,
       comment:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1089,6 +1322,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final int payerId;
   final int amountKop;
   final int? categoryId;
+  final String title;
   final String comment;
   final DateTime date;
   const Expense({
@@ -1097,6 +1331,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.payerId,
     required this.amountKop,
     this.categoryId,
+    required this.title,
     required this.comment,
     required this.date,
   });
@@ -1110,6 +1345,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     if (!nullToAbsent || categoryId != null) {
       map['category_id'] = Variable<int>(categoryId);
     }
+    map['title'] = Variable<String>(title);
     map['comment'] = Variable<String>(comment);
     map['date'] = Variable<DateTime>(date);
     return map;
@@ -1125,6 +1361,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           categoryId == null && nullToAbsent
               ? const Value.absent()
               : Value(categoryId),
+      title: Value(title),
       comment: Value(comment),
       date: Value(date),
     );
@@ -1141,6 +1378,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       payerId: serializer.fromJson<int>(json['payerId']),
       amountKop: serializer.fromJson<int>(json['amountKop']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
+      title: serializer.fromJson<String>(json['title']),
       comment: serializer.fromJson<String>(json['comment']),
       date: serializer.fromJson<DateTime>(json['date']),
     );
@@ -1154,6 +1392,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       'payerId': serializer.toJson<int>(payerId),
       'amountKop': serializer.toJson<int>(amountKop),
       'categoryId': serializer.toJson<int?>(categoryId),
+      'title': serializer.toJson<String>(title),
       'comment': serializer.toJson<String>(comment),
       'date': serializer.toJson<DateTime>(date),
     };
@@ -1165,6 +1404,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     int? payerId,
     int? amountKop,
     Value<int?> categoryId = const Value.absent(),
+    String? title,
     String? comment,
     DateTime? date,
   }) => Expense(
@@ -1173,6 +1413,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     payerId: payerId ?? this.payerId,
     amountKop: amountKop ?? this.amountKop,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    title: title ?? this.title,
     comment: comment ?? this.comment,
     date: date ?? this.date,
   );
@@ -1184,6 +1425,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       amountKop: data.amountKop.present ? data.amountKop.value : this.amountKop,
       categoryId:
           data.categoryId.present ? data.categoryId.value : this.categoryId,
+      title: data.title.present ? data.title.value : this.title,
       comment: data.comment.present ? data.comment.value : this.comment,
       date: data.date.present ? data.date.value : this.date,
     );
@@ -1197,6 +1439,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('payerId: $payerId, ')
           ..write('amountKop: $amountKop, ')
           ..write('categoryId: $categoryId, ')
+          ..write('title: $title, ')
           ..write('comment: $comment, ')
           ..write('date: $date')
           ..write(')'))
@@ -1204,8 +1447,16 @@ class Expense extends DataClass implements Insertable<Expense> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, groupId, payerId, amountKop, categoryId, comment, date);
+  int get hashCode => Object.hash(
+    id,
+    groupId,
+    payerId,
+    amountKop,
+    categoryId,
+    title,
+    comment,
+    date,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1215,6 +1466,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.payerId == this.payerId &&
           other.amountKop == this.amountKop &&
           other.categoryId == this.categoryId &&
+          other.title == this.title &&
           other.comment == this.comment &&
           other.date == this.date);
 }
@@ -1225,6 +1477,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> payerId;
   final Value<int> amountKop;
   final Value<int?> categoryId;
+  final Value<String> title;
   final Value<String> comment;
   final Value<DateTime> date;
   const ExpensesCompanion({
@@ -1233,6 +1486,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.payerId = const Value.absent(),
     this.amountKop = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.title = const Value.absent(),
     this.comment = const Value.absent(),
     this.date = const Value.absent(),
   });
@@ -1242,6 +1496,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     required int payerId,
     required int amountKop,
     this.categoryId = const Value.absent(),
+    this.title = const Value.absent(),
     this.comment = const Value.absent(),
     required DateTime date,
   }) : groupId = Value(groupId),
@@ -1254,6 +1509,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<int>? payerId,
     Expression<int>? amountKop,
     Expression<int>? categoryId,
+    Expression<String>? title,
     Expression<String>? comment,
     Expression<DateTime>? date,
   }) {
@@ -1263,6 +1519,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (payerId != null) 'payer_id': payerId,
       if (amountKop != null) 'amount_kop': amountKop,
       if (categoryId != null) 'category_id': categoryId,
+      if (title != null) 'title': title,
       if (comment != null) 'comment': comment,
       if (date != null) 'date': date,
     });
@@ -1274,6 +1531,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<int>? payerId,
     Value<int>? amountKop,
     Value<int?>? categoryId,
+    Value<String>? title,
     Value<String>? comment,
     Value<DateTime>? date,
   }) {
@@ -1283,6 +1541,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       payerId: payerId ?? this.payerId,
       amountKop: amountKop ?? this.amountKop,
       categoryId: categoryId ?? this.categoryId,
+      title: title ?? this.title,
       comment: comment ?? this.comment,
       date: date ?? this.date,
     );
@@ -1306,6 +1565,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
     }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
     if (comment.present) {
       map['comment'] = Variable<String>(comment.value);
     }
@@ -1323,6 +1585,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('payerId: $payerId, ')
           ..write('amountKop: $amountKop, ')
           ..write('categoryId: $categoryId, ')
+          ..write('title: $title, ')
           ..write('comment: $comment, ')
           ..write('date: $date')
           ..write(')'))
@@ -2181,6 +2444,8 @@ typedef $$GroupsTableCreateCompanionBuilder =
       Value<int> id,
       required String name,
       Value<String> currencySymbol,
+      Value<bool> isArchived,
+      Value<bool> roundAmounts,
       Value<DateTime> createdAt,
     });
 typedef $$GroupsTableUpdateCompanionBuilder =
@@ -2188,6 +2453,8 @@ typedef $$GroupsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> name,
       Value<String> currencySymbol,
+      Value<bool> isArchived,
+      Value<bool> roundAmounts,
       Value<DateTime> createdAt,
     });
 
@@ -2296,6 +2563,16 @@ class $$GroupsTableFilterComposer
 
   ColumnFilters<String> get currencySymbol => $composableBuilder(
     column: $table.currencySymbol,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get roundAmounts => $composableBuilder(
+    column: $table.roundAmounts,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2429,6 +2706,16 @@ class $$GroupsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get roundAmounts => $composableBuilder(
+    column: $table.roundAmounts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2452,6 +2739,16 @@ class $$GroupsTableAnnotationComposer
 
   GeneratedColumn<String> get currencySymbol => $composableBuilder(
     column: $table.currencySymbol,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get roundAmounts => $composableBuilder(
+    column: $table.roundAmounts,
     builder: (column) => column,
   );
 
@@ -2596,11 +2893,15 @@ class $$GroupsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> currencySymbol = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<bool> roundAmounts = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => GroupsCompanion(
                 id: id,
                 name: name,
                 currencySymbol: currencySymbol,
+                isArchived: isArchived,
+                roundAmounts: roundAmounts,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -2608,11 +2909,15 @@ class $$GroupsTableTableManager
                 Value<int> id = const Value.absent(),
                 required String name,
                 Value<String> currencySymbol = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<bool> roundAmounts = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => GroupsCompanion.insert(
                 id: id,
                 name: name,
                 currencySymbol: currencySymbol,
+                isArchived: isArchived,
+                roundAmounts: roundAmounts,
                 createdAt: createdAt,
               ),
           withReferenceMapper:
@@ -3138,12 +3443,16 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       Value<int> id,
       required int groupId,
       required String name,
+      Value<String> icon,
+      Value<int> color,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
       Value<int> id,
       Value<int> groupId,
       Value<String> name,
+      Value<String> icon,
+      Value<int> color,
     });
 
 final class $$CategoriesTableReferences
@@ -3228,6 +3537,16 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3324,6 +3643,16 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$GroupsTableOrderingComposer get groupId {
     final $$GroupsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -3362,6 +3691,12 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
 
   $$GroupsTableAnnotationComposer get groupId {
     final $$GroupsTableAnnotationComposer composer = $composerBuilder(
@@ -3473,16 +3808,28 @@ class $$CategoriesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> groupId = const Value.absent(),
                 Value<String> name = const Value.absent(),
-              }) => CategoriesCompanion(id: id, groupId: groupId, name: name),
+                Value<String> icon = const Value.absent(),
+                Value<int> color = const Value.absent(),
+              }) => CategoriesCompanion(
+                id: id,
+                groupId: groupId,
+                name: name,
+                icon: icon,
+                color: color,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required int groupId,
                 required String name,
+                Value<String> icon = const Value.absent(),
+                Value<int> color = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 groupId: groupId,
                 name: name,
+                icon: icon,
+                color: color,
               ),
           withReferenceMapper:
               (p0) =>
@@ -3616,6 +3963,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       required int payerId,
       required int amountKop,
       Value<int?> categoryId,
+      Value<String> title,
       Value<String> comment,
       required DateTime date,
     });
@@ -3626,6 +3974,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<int> payerId,
       Value<int> amountKop,
       Value<int?> categoryId,
+      Value<String> title,
       Value<String> comment,
       Value<DateTime> date,
     });
@@ -3707,6 +4056,11 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<int> get amountKop => $composableBuilder(
     column: $table.amountKop,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3809,6 +4163,11 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get comment => $composableBuilder(
     column: $table.comment,
     builder: (column) => ColumnOrderings(column),
@@ -3903,6 +4262,9 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<int> get amountKop =>
       $composableBuilder(column: $table.amountKop, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
   GeneratedColumn<String> get comment =>
       $composableBuilder(column: $table.comment, builder: (column) => column);
@@ -4013,6 +4375,7 @@ class $$ExpensesTableTableManager
                 Value<int> payerId = const Value.absent(),
                 Value<int> amountKop = const Value.absent(),
                 Value<int?> categoryId = const Value.absent(),
+                Value<String> title = const Value.absent(),
                 Value<String> comment = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
               }) => ExpensesCompanion(
@@ -4021,6 +4384,7 @@ class $$ExpensesTableTableManager
                 payerId: payerId,
                 amountKop: amountKop,
                 categoryId: categoryId,
+                title: title,
                 comment: comment,
                 date: date,
               ),
@@ -4031,6 +4395,7 @@ class $$ExpensesTableTableManager
                 required int payerId,
                 required int amountKop,
                 Value<int?> categoryId = const Value.absent(),
+                Value<String> title = const Value.absent(),
                 Value<String> comment = const Value.absent(),
                 required DateTime date,
               }) => ExpensesCompanion.insert(
@@ -4039,6 +4404,7 @@ class $$ExpensesTableTableManager
                 payerId: payerId,
                 amountKop: amountKop,
                 categoryId: categoryId,
+                title: title,
                 comment: comment,
                 date: date,
               ),
