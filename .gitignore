@@ -45,5 +45,13 @@ app.*.map.json
 /android/app/release
 
 # Android signing
+key.properties
 android/key.properties
-android/keystore/
+*.jks
+*.keystore
+
+# Obfuscation debug symbols
+build/debug-info/
+
+# iOS sensitive files
+ios/Runner/GoogleService-Info.plist
