@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:upgrader/upgrader.dart';
 
+import 'core/config/flavor.dart';
 import 'core/db/database.dart';
 import 'core/db/app_settings_dao.dart';
 import 'core/providers/locale_provider.dart';
@@ -14,19 +15,22 @@ import 'l10n/app_localizations.dart';
 
 const _firstLaunchKey = 'first_launch_date';
 
-void main() async {
+// Default entry point — uses dev flavor. Use main_dev.dart / main_prod.dart
+// with --flavor flag for explicit flavor builds.
+void main() => bootstrap(Flavor.dev);
+
+Future<void> bootstrap(Flavor flavor) async {
+  FlavorConfig.set(flavor);
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Record first_launch_date on very first run.
-  // Required for grandfather-premium logic in v2.0.
-  // Dual storage: SharedPreferences (survives reinstall via Auto Backup) + SQLite (fallback).
+  // Dual-storage of first_launch_date for grandfather-premium logic in v2.0.
+  // SharedPreferences survives reinstall via Android Auto Backup; SQLite is fallback.
   final prefs = await SharedPreferences.getInstance();
   var stored = prefs.getString(_firstLaunchKey);
   if (stored == null) {
     stored = DateTime.now().toIso8601String();
     await prefs.setString(_firstLaunchKey, stored);
   }
-  // SQLite copy for compatibility with existing code
   final db = AppDatabase();
   final sqliteValue = await db.getSetting(_firstLaunchKey);
   if (sqliteValue == null) {
