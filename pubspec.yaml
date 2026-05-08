@@ -2,7 +2,7 @@ name: koshyk_app
 description: "Koshyk - Expense Splitter App"
 publish_to: 'none'
 
-version: 1.0.9+10
+version: 2.0.0-dev.1+1
 
 environment:
   sdk: ^3.7.2
