@@ -36,7 +36,7 @@ jobs:
           export ANDROID_HOME=/home/deployer/android-sdk
           flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 
-      - name: Build arm64 APK for Telegram delivery
+      - name: Build arm64 APK (attached to the GitHub Release)
         run: |
           export PATH=$PATH:/home/deployer/flutter/bin
           export ANDROID_HOME=/home/deployer/android-sdk
@@ -61,19 +61,6 @@ jobs:
             Commit: ${{ github.sha }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Send APK to Telegram
-        run: |
-          APK_PATH="build/app/outputs/flutter-apk/app-arm64-v8a-prod-release.apk"
-          curl -s -F "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-               -F "document=@${APK_PATH}" \
-               -F "caption=✅ *koshyk_app ${{ github.ref_name }}* (arm64 release)" \
-               -F "parse_mode=Markdown" \
-               "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" > /dev/null
-
-          RELEASE_URL="https://github.com/gviacheslav-sketch/koshyk_app/releases/tag/${{ github.ref_name }}"
-          MESSAGE="📦 *${{ github.ref_name }}* uploaded to internal testing track%0A🔗 [GitHub Release](${RELEASE_URL})"
-          curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage?chat_id=${{ secrets.TELEGRAM_CHAT_ID }}&text=${MESSAGE}&parse_mode=Markdown" > /dev/null
 
       - name: Remove signing key from workspace
         if: always()
