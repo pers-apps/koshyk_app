@@ -20,6 +20,8 @@ import '../../participants/data/participants_providers.dart';
 import '../../groups/data/groups_providers.dart';
 import '../../expenses/data/expenses_providers.dart';
 import '../../categories/data/categories_providers.dart';
+import '../../../core/widgets/group_avatar.dart';
+import 'summary_widgets.dart';
 
 
 class SummaryScreen extends ConsumerStatefulWidget {
@@ -77,6 +79,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
       data: (g) => g?.roundAmounts ?? true,
       orElse: () => true,
     );
+    final group = groupAsync.maybeWhen(data: (g) => g, orElse: () => null);
     final groupName = groupAsync.maybeWhen(
       data: (g) => g?.name ?? '',
       orElse: () => '',
@@ -124,9 +127,11 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset('assets/logo.png', width: 28, height: 28),
+            GroupAvatar(
+              name: groupName,
+              iconEmoji: group?.iconEmoji,
+              iconImage: group?.iconImage,
+              size: 28,
             ),
             const SizedBox(width: 8),
             Flexible(child: Text(groupName.isNotEmpty ? '$groupName — ${l.summary}' : l.summary)),
@@ -151,12 +156,8 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (summary) {
-          final sortedSettlements = [...summary.settlements]
-            ..sort((a, b) {
-              final nameA = participantNames[a.fromId] ?? '';
-              final nameB = participantNames[b.fromId] ?? '';
-              return nameA.compareTo(nameB);
-            });
+          final sortedSettlements =
+              sortPaymentsByDebtor(summary.settlements, participantNames);
 
           final hasExpenses = asyncExpenses.maybeWhen(data: (list) => list.isNotEmpty, orElse: () => true);
           if (!hasExpenses) {
@@ -202,9 +203,11 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.asset('assets/logo.png', width: 24, height: 24),
+                      GroupAvatar(
+                        name: groupName,
+                        iconEmoji: group?.iconEmoji,
+                        iconImage: group?.iconImage,
+                        size: 24,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -231,19 +234,21 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                 _SummaryCard(
                   l: l,
                   totalShared: summary.totalShared,
-                  equalShare: summary.equalShare,
+                  participantShares: summary.participants,
+                  participantNames: participantNames,
+                  participantColors: participantColors,
                   currency: currency,
                   roundAmounts: roundAmounts,
                 ),
                 const SizedBox(height: 20),
 
                 // ── Who owes whom — FIRST ────────────────────────────────
-                _SectionHeader(
+                SummarySectionHeader(
                   label: l.whoOwesWhom,
                   stripeColor: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 8),
-                ...sortedSettlements.map((p) => _PaymentTile(
+                ...sortedSettlements.map((p) => PaymentTile(
                         payment: p,
                         participantNames: participantNames,
                         participantColors: participantColors,
@@ -255,7 +260,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                 // ── Pie chart — AFTER who-owes-whom ─────────────────────
                 if (catTotals.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  _SectionHeader(
+                  SummarySectionHeader(
                     label: l.spendingByCategory,
                     stripeColor: Theme.of(context).colorScheme.secondary,
                   ),
@@ -386,53 +391,22 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
   }
 }
 
-// ── Section header with top color stripe (Variant C) ─────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  final String label;
-  final Color stripeColor;
-  const _SectionHeader({required this.label, required this.stripeColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          top: BorderSide(color: stripeColor, width: 4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-      ),
-    );
-  }
-}
-
 // ── Summary totals card ───────────────────────────────────────────────────────
 
 class _SummaryCard extends StatelessWidget {
   final AppLocalizations l;
   final double totalShared;
-  final double equalShare;
+  final List<ParticipantSummary> participantShares;
+  final Map<int, String> participantNames;
+  final Map<int, Color> participantColors;
   final String currency;
   final bool roundAmounts;
   const _SummaryCard({
     required this.l,
     required this.totalShared,
-    required this.equalShare,
+    required this.participantShares,
+    required this.participantNames,
+    required this.participantColors,
     required this.currency,
     required this.roundAmounts,
   });
@@ -449,10 +423,37 @@ class _SummaryCard extends StatelessWidget {
                 label: l.totalShared,
                 value: formatMoney(toKopiykas(totalShared),
                     symbol: currency, round: roundAmounts)),
-            _Row(
-                label: l.equalShare,
-                value: formatMoney(toKopiykas(equalShare),
-                    symbol: currency, round: roundAmounts)),
+            if (participantShares.isNotEmpty) ...[
+              const Divider(height: 20),
+              Text(l.shareOfEachPerson,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              for (final ps in participantShares)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 6,
+                            backgroundColor:
+                                participantColors[ps.participantId] ??
+                                    Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(participantNames[ps.participantId] ?? '?'),
+                        ],
+                      ),
+                      Text(
+                        formatMoney(toKopiykas(ps.share),
+                            symbol: currency, round: roundAmounts),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ],
         ),
       ),
@@ -475,129 +476,6 @@ class _Row extends StatelessWidget {
           Text(label),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
-      ),
-    );
-  }
-}
-
-// ── Payment tile — pastel accent, bigger amount, sorted alphabetically ────────
-
-class _PaymentTile extends StatelessWidget {
-  final Payment payment;
-  final Map<int, String> participantNames;
-  final Map<int, Color> participantColors;
-  final String currency;
-  final AppLocalizations l;
-  final bool roundAmounts;
-
-  const _PaymentTile({
-    required this.payment,
-    required this.participantNames,
-    required this.participantColors,
-    required this.currency,
-    required this.l,
-    required this.roundAmounts,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final from = participantNames[payment.fromId] ?? '?';
-    final to = participantNames[payment.toId] ?? '?';
-    final accentColor =
-        participantColors[payment.fromId] ?? const Color(0xFF90CAF9);
-    final amountStr = formatMoney(
-      toKopiykas(payment.amount),
-      symbol: currency,
-      round: roundAmounts,
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(color: accentColor, width: 4),
-        ),
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(8),
-          bottomRight: Radius.circular(8),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          children: [
-            // Debtor avatar
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: accentColor.withValues(alpha: 0.25),
-              child: Text(
-                from.isNotEmpty ? from[0].toUpperCase() : '?',
-                style: TextStyle(
-                  color: accentColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Names + label
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        from,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.arrow_forward_rounded, size: 22),
-                      ),
-                      Text(
-                        to,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    l.pays, // "борг" / "debt"
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.5),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Amount — bigger font, neutral color (not red)
-            Text(
-              amountStr,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

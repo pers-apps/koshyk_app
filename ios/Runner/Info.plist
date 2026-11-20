@@ -50,5 +50,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a photo for the group icon. The photo stays on your device.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo for the group icon. The photo stays on your device.</string>
 </dict>
 </plist>

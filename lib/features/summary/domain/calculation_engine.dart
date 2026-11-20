@@ -21,14 +21,15 @@ class Payment {
 class ParticipantSummary {
   final int participantId;
   final double amountPaid;
-  final double equalShare;
+  final double share; // this participant's real aggregated share — sum of
+  // their allocated portion of every expense they're a receiver on
   final double rawBalance;
   final double transferNet;
   final double finalBalance;
   const ParticipantSummary({
     required this.participantId,
     required this.amountPaid,
-    required this.equalShare,
+    required this.share,
     required this.rawBalance,
     required this.transferNet,
     required this.finalBalance,
@@ -37,13 +38,11 @@ class ParticipantSummary {
 
 class GroupSummary {
   final double totalShared;
-  final double equalShare;
   final List<ParticipantSummary> participants;
   final List<Payment> settlements;
   final bool balanceWarning;
   const GroupSummary({
     required this.totalShared,
-    required this.equalShare,
     required this.participants,
     required this.settlements,
     required this.balanceWarning,
@@ -52,49 +51,63 @@ class GroupSummary {
 
 double _round2(double v) => (v * 100).round() / 100.0;
 
+/// [expenseReceivers] maps an expense's id to the participant ids it's
+/// split between. An expense missing from the map (or mapped to an empty
+/// list) is split between every participant passed in — this is what keeps
+/// expenses created before per-expense splitting (REMARKS #141) working
+/// without a data migration.
 GroupSummary calculateSummary({
   required List<Participant> participants,
   required List<Expense> expenses,
   required List<DirectSettlement> directSettlements,
+  Map<int, List<int>> expenseReceivers = const {},
 }) {
   if (participants.isEmpty) {
     return const GroupSummary(
       totalShared: 0,
-      equalShare: 0,
       participants: [],
       settlements: [],
       balanceWarning: false,
     );
   }
 
-  final n = participants.length;
+  final allIds = participants.map((p) => p.id).toList();
 
   // Total shared expenses in UAH
   final totalShared = _round2(
     expenses.fold<double>(0, (s, e) => s + e.amountKop / 100.0),
   );
 
-  // Equal share per person (display value)
-  final equalShare = n > 0 ? _round2(totalShared / n) : 0.0;
-
-  // Per-participant shares: distribute rounding remainder to last participant
-  // so sum(shares) == totalShared exactly and balance sum is always 0.
-  final baseShare = equalShare;
-  double assignedSoFar = 0;
-  final perPersonShare = <int, double>{};
-  for (int i = 0; i < n; i++) {
-    if (i < n - 1) {
-      perPersonShare[participants[i].id] = baseShare;
-      assignedSoFar = _round2(assignedSoFar + baseShare);
-    } else {
-      perPersonShare[participants[i].id] = _round2(totalShared - assignedSoFar);
-    }
-  }
-
   // Amount paid per participant
   final paid = <int, double>{for (final p in participants) p.id: 0.0};
   for (final e in expenses) {
     paid[e.payerId] = (paid[e.payerId] ?? 0) + e.amountKop / 100.0;
+  }
+
+  // Per-participant actual share: for each expense, split its amount
+  // between its receivers (remainder from rounding goes to the last
+  // receiver, same convention as the old group-wide split), then
+  // accumulate into each participant's total share across all expenses.
+  final share = <int, double>{for (final p in participants) p.id: 0.0};
+  for (final e in expenses) {
+    final explicit = expenseReceivers[e.id];
+    final receivers =
+        (explicit == null || explicit.isEmpty) ? allIds : explicit;
+    if (receivers.isEmpty) continue;
+    final amount = e.amountKop / 100.0;
+    final base = _round2(amount / receivers.length);
+    double assigned = 0;
+    for (var i = 0; i < receivers.length; i++) {
+      final pid = receivers[i];
+      double portion;
+      if (i < receivers.length - 1) {
+        portion = base;
+        assigned = _round2(assigned + base);
+      } else {
+        portion = _round2(amount - assigned);
+      }
+      share[pid] = _round2((share[pid] ?? 0) + portion);
+    }
   }
 
   // Transfer net per participant:
@@ -111,14 +124,14 @@ GroupSummary calculateSummary({
   // Build per-participant summaries
   final summaries = participants.map((p) {
     final ap = _round2(paid[p.id] ?? 0);
-    final share = perPersonShare[p.id] ?? baseShare;
-    final raw = _round2(ap - share);
+    final sh = _round2(share[p.id] ?? 0);
+    final raw = _round2(ap - sh);
     final tn = _round2(transferNet[p.id] ?? 0);
     final fb = _round2(raw + tn);
     return ParticipantSummary(
       participantId: p.id,
       amountPaid: ap,
-      equalShare: equalShare,
+      share: sh,
       rawBalance: raw,
       transferNet: tn,
       finalBalance: fb,
@@ -138,7 +151,6 @@ GroupSummary calculateSummary({
 
   return GroupSummary(
     totalShared: totalShared,
-    equalShare: equalShare,
     participants: summaries,
     settlements: payments,
     balanceWarning: balanceWarning,

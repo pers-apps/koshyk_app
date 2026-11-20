@@ -11,6 +11,7 @@ import 'core/providers/locale_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'features/groups/data/group_icon_storage.dart';
 import 'l10n/app_localizations.dart';
 
 const _firstLaunchKey = 'first_launch_date';
@@ -37,6 +38,9 @@ Future<void> bootstrap(Flavor flavor) async {
     await db.setSetting(_firstLaunchKey, stored);
   }
   await db.close();
+
+  // Group photo icons directory (REMARKS #145).
+  await GroupIconStorage.init();
 
   runApp(const ProviderScope(child: KoshykApp()));
 }

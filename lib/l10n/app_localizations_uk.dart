@@ -111,6 +111,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get category => 'Категорія';
 
   @override
+  String get splitBetween => 'Розподіл витрати';
+
+  @override
+  String get splitAll => 'Всі';
+
+  @override
+  String get splitBetweenSheetTitle => 'Розподілити між:';
+
+  @override
   String get invalidAmount => 'Введіть коректну суму (> 0)';
 
   @override
@@ -141,7 +150,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get totalShared => 'Загальні спільні витрати';
 
   @override
-  String get equalShare => 'Рівна частка';
+  String get shareOfEachPerson => 'Частка кожного';
 
   @override
   String get amountPaid => 'Сплачено';
@@ -192,10 +201,20 @@ class AppLocalizationsUk extends AppLocalizations {
   String get allTime => 'Весь час';
 
   @override
-  String get export => 'Експорт CSV';
+  String get export => 'Експортувати (backup)';
 
   @override
-  String get exportDone => 'Файл CSV готовий';
+  String get exportDone => 'Файл бекапу готовий';
+
+  @override
+  String get importBackup => 'Імпортувати (backup)';
+
+  @override
+  String get importDone => 'Групу імпортовано';
+
+  @override
+  String get importInvalidFile =>
+      'Не вдалося прочитати файл — невірний формат або версія';
 
   @override
   String get delete => 'Видалити';
@@ -254,9 +273,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get minOneCategoryRequired => 'Має бути хоча б одна категорія';
 
   @override
-  String get equalSharingInfo => 'Витрати діляться порівну між учасниками';
-
-  @override
   String get groupSettings => 'Налаштування групи';
 
   @override
@@ -270,6 +286,12 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get shareTitle => 'Підсумок Кошик';
+
+  @override
+  String get latestExpensesShareTitle => 'Останні витрати — Кошик';
+
+  @override
+  String get latestExpensesHeading => 'Останні 10 витрат';
 
   @override
   String get spendingByCategory => 'Витрати за категоріями';
@@ -346,14 +368,17 @@ class AppLocalizationsUk extends AppLocalizations {
   String get defaultCategoryFood => 'Харчування';
 
   @override
-  String get defaultCategoryWork => 'Транспорт';
+  String get defaultCategoryWork => 'Робота';
+
+  @override
+  String get defaultCategoryTransport => 'Транспорт';
 
   @override
   String get appTitleTagline => 'Кошик — рахує за тебе';
 
   @override
   String get appDescription =>
-      'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи учасників\n• Додавайте витрати з категоріями та платником\n• Підсумок: загальна сума, рівна частка, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Pie-діаграма витрат за категоріями\n• Підтримка світлої та темної теми';
+      'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи з учасниками та категоріями\n• Додавайте групам іконку — емодзі або фото\n• Додавайте витрати з категорією, платником і коментарем\n• Діліть витрату між усіма або лише обраними учасниками\n• Рахуйте прямо в полі суми (напр. 300+450 або 120×3)\n• Підсумок: загальна сума, частка кожного, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Кругова діаграма витрат за категоріями\n• Діліться підсумком або останніми витратами як зображенням\n• Зберігайте групу у файл і переносьте на інший телефон\n• Архівуйте завершені групи\n• Працює без інтернету — дані залишаються на вашому пристрої\n• Підтримка світлої та темної теми';
 
   @override
   String get version => 'Версія';
@@ -408,4 +433,38 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get upToDate => 'Встановлена остання версія ✓';
+
+  @override
+  String get groupIcon => 'Іконка групи';
+
+  @override
+  String get groupIconEmoji => 'Емодзі';
+
+  @override
+  String get groupIconGallery => 'Фото з галереї';
+
+  @override
+  String get groupIconCamera => 'Зробити фото';
+
+  @override
+  String get groupIconRemove => 'Прибрати іконку';
+
+  @override
+  String get groupIconEmojiHint => 'Або введіть будь-яке емодзі';
+
+  @override
+  String get groupIconCropTitle => 'Обрізати фото';
+
+  @override
+  String get groupIconError => 'Не вдалося завантажити фото';
+
+  @override
+  String splitHintCount(int count, int total) {
+    return '$count з $total учасників';
+  }
+
+  @override
+  String splitHintSemantics(String names) {
+    return 'Розподілено між: $names';
+  }
 }

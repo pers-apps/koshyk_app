@@ -296,6 +296,24 @@ abstract class AppLocalizations {
   /// **'Категорія'**
   String get category;
 
+  /// No description provided for @splitBetween.
+  ///
+  /// In uk, this message translates to:
+  /// **'Розподіл витрати'**
+  String get splitBetween;
+
+  /// No description provided for @splitAll.
+  ///
+  /// In uk, this message translates to:
+  /// **'Всі'**
+  String get splitAll;
+
+  /// No description provided for @splitBetweenSheetTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Розподілити між:'**
+  String get splitBetweenSheetTitle;
+
   /// No description provided for @invalidAmount.
   ///
   /// In uk, this message translates to:
@@ -356,11 +374,11 @@ abstract class AppLocalizations {
   /// **'Загальні спільні витрати'**
   String get totalShared;
 
-  /// No description provided for @equalShare.
+  /// No description provided for @shareOfEachPerson.
   ///
   /// In uk, this message translates to:
-  /// **'Рівна частка'**
-  String get equalShare;
+  /// **'Частка кожного'**
+  String get shareOfEachPerson;
 
   /// No description provided for @amountPaid.
   ///
@@ -461,14 +479,32 @@ abstract class AppLocalizations {
   /// No description provided for @export.
   ///
   /// In uk, this message translates to:
-  /// **'Експорт CSV'**
+  /// **'Експортувати (backup)'**
   String get export;
 
   /// No description provided for @exportDone.
   ///
   /// In uk, this message translates to:
-  /// **'Файл CSV готовий'**
+  /// **'Файл бекапу готовий'**
   String get exportDone;
+
+  /// No description provided for @importBackup.
+  ///
+  /// In uk, this message translates to:
+  /// **'Імпортувати (backup)'**
+  String get importBackup;
+
+  /// No description provided for @importDone.
+  ///
+  /// In uk, this message translates to:
+  /// **'Групу імпортовано'**
+  String get importDone;
+
+  /// No description provided for @importInvalidFile.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося прочитати файл — невірний формат або версія'**
+  String get importInvalidFile;
 
   /// No description provided for @delete.
   ///
@@ -572,12 +608,6 @@ abstract class AppLocalizations {
   /// **'Має бути хоча б одна категорія'**
   String get minOneCategoryRequired;
 
-  /// No description provided for @equalSharingInfo.
-  ///
-  /// In uk, this message translates to:
-  /// **'Витрати діляться порівну між учасниками'**
-  String get equalSharingInfo;
-
   /// No description provided for @groupSettings.
   ///
   /// In uk, this message translates to:
@@ -607,6 +637,18 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Підсумок Кошик'**
   String get shareTitle;
+
+  /// No description provided for @latestExpensesShareTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Останні витрати — Кошик'**
+  String get latestExpensesShareTitle;
+
+  /// No description provided for @latestExpensesHeading.
+  ///
+  /// In uk, this message translates to:
+  /// **'Останні 10 витрат'**
+  String get latestExpensesHeading;
 
   /// No description provided for @spendingByCategory.
   ///
@@ -755,8 +797,14 @@ abstract class AppLocalizations {
   /// No description provided for @defaultCategoryWork.
   ///
   /// In uk, this message translates to:
-  /// **'Транспорт'**
+  /// **'Робота'**
   String get defaultCategoryWork;
+
+  /// No description provided for @defaultCategoryTransport.
+  ///
+  /// In uk, this message translates to:
+  /// **'Транспорт'**
+  String get defaultCategoryTransport;
 
   /// No description provided for @appTitleTagline.
   ///
@@ -767,7 +815,7 @@ abstract class AppLocalizations {
   /// No description provided for @appDescription.
   ///
   /// In uk, this message translates to:
-  /// **'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи учасників\n• Додавайте витрати з категоріями та платником\n• Підсумок: загальна сума, рівна частка, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Pie-діаграма витрат за категоріями\n• Підтримка світлої та темної теми'**
+  /// **'Кошик — мобільний додаток для спільного обліку витрат у групі. Зручний для подорожей, спільного проживання та командних заходів.\n\n• Створюйте групи з учасниками та категоріями\n• Додавайте групам іконку — емодзі або фото\n• Додавайте витрати з категорією, платником і коментарем\n• Діліть витрату між усіма або лише обраними учасниками\n• Рахуйте прямо в полі суми (напр. 300+450 або 120×3)\n• Підсумок: загальна сума, частка кожного, хто кому скільки винен\n• Розрахунки фіксують погашення боргів між учасниками\n• Кругова діаграма витрат за категоріями\n• Діліться підсумком або останніми витратами як зображенням\n• Зберігайте групу у файл і переносьте на інший телефон\n• Архівуйте завершені групи\n• Працює без інтернету — дані залишаються на вашому пристрої\n• Підтримка світлої та темної теми'**
   String get appDescription;
 
   /// No description provided for @version.
@@ -865,6 +913,66 @@ abstract class AppLocalizations {
   /// In uk, this message translates to:
   /// **'Встановлена остання версія ✓'**
   String get upToDate;
+
+  /// No description provided for @groupIcon.
+  ///
+  /// In uk, this message translates to:
+  /// **'Іконка групи'**
+  String get groupIcon;
+
+  /// No description provided for @groupIconEmoji.
+  ///
+  /// In uk, this message translates to:
+  /// **'Емодзі'**
+  String get groupIconEmoji;
+
+  /// No description provided for @groupIconGallery.
+  ///
+  /// In uk, this message translates to:
+  /// **'Фото з галереї'**
+  String get groupIconGallery;
+
+  /// No description provided for @groupIconCamera.
+  ///
+  /// In uk, this message translates to:
+  /// **'Зробити фото'**
+  String get groupIconCamera;
+
+  /// No description provided for @groupIconRemove.
+  ///
+  /// In uk, this message translates to:
+  /// **'Прибрати іконку'**
+  String get groupIconRemove;
+
+  /// No description provided for @groupIconEmojiHint.
+  ///
+  /// In uk, this message translates to:
+  /// **'Або введіть будь-яке емодзі'**
+  String get groupIconEmojiHint;
+
+  /// No description provided for @groupIconCropTitle.
+  ///
+  /// In uk, this message translates to:
+  /// **'Обрізати фото'**
+  String get groupIconCropTitle;
+
+  /// No description provided for @groupIconError.
+  ///
+  /// In uk, this message translates to:
+  /// **'Не вдалося завантажити фото'**
+  String get groupIconError;
+
+  /// No description provided for @splitHintCount.
+  ///
+  /// In uk, this message translates to:
+  /// **'{count} з {total} учасників'**
+  String splitHintCount(int count, int total);
+
+  /// No description provided for @splitHintSemantics.
+  ///
+  /// In uk, this message translates to:
+  /// **'Розподілено між: {names}'**
+  String splitHintSemantics(String names);
 }
 
 class _AppLocalizationsDelegate

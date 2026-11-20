@@ -60,7 +60,6 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(0.0, 0.01));
-      expect(result.equalShare, closeTo(0.0, 0.01));
       expect(result.participants, isEmpty);
       expect(result.settlements, isEmpty);
       expect(result.balanceWarning, isFalse);
@@ -79,12 +78,11 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(0.0, 0.01));
-      expect(result.equalShare, closeTo(0.0, 0.01));
       expect(result.participants, hasLength(1));
 
       final ps = summaryFor(result, 1);
       expect(ps.amountPaid, closeTo(0.0, 0.01));
-      expect(ps.equalShare, closeTo(0.0, 0.01));
+      expect(ps.share, closeTo(0.0, 0.01));
       expect(ps.rawBalance, closeTo(0.0, 0.01));
       expect(ps.transferNet, closeTo(0.0, 0.01));
       expect(ps.finalBalance, closeTo(0.0, 0.01));
@@ -107,9 +105,9 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(50.0, 0.01));
-      expect(result.equalShare, closeTo(50.0, 0.01));
 
       final ps = summaryFor(result, 1);
+      expect(ps.share, closeTo(50.0, 0.01));
       expect(ps.amountPaid, closeTo(50.0, 0.01));
       expect(ps.rawBalance, closeTo(0.0, 0.01));
       expect(ps.finalBalance, closeTo(0.0, 0.01));
@@ -138,9 +136,10 @@ void main() {
       );
     });
 
-    test('totalShared and equalShare are correct', () {
+    test('totalShared is correct and each participant share is 100', () {
       expect(result.totalShared, closeTo(200.0, 0.01));
-      expect(result.equalShare, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(100.0, 0.01));
     });
 
     test('Alice rawBalance = +100', () {
@@ -185,9 +184,9 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(200.0, 0.01));
-      expect(result.equalShare, closeTo(100.0, 0.01));
 
       for (final ps in result.participants) {
+        expect(ps.share, closeTo(100.0, 0.01));
         expect(ps.rawBalance, closeTo(0.0, 0.01));
         expect(ps.finalBalance, closeTo(0.0, 0.01));
       }
@@ -215,8 +214,10 @@ void main() {
       );
     });
 
-    test('equalShare = 100', () {
-      expect(result.equalShare, closeTo(100.0, 0.01));
+    test('each participant share = 100', () {
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 3).share, closeTo(100.0, 0.01));
     });
 
     test('Alice rawBalance = +200', () {
@@ -275,9 +276,11 @@ void main() {
       );
     });
 
-    test('totalShared = 300, equalShare = 100', () {
+    test('totalShared = 300, each participant share = 100', () {
       expect(result.totalShared, closeTo(300.0, 0.01));
-      expect(result.equalShare, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 3).share, closeTo(100.0, 0.01));
     });
 
     test('Alice rawBalance = +50', () {
@@ -434,9 +437,11 @@ void main() {
       );
     });
 
-    test('totalShared = 1000, equalShare = 200', () {
+    test('totalShared = 1000, each participant share = 200', () {
       expect(result.totalShared, closeTo(1000.0, 0.01));
-      expect(result.equalShare, closeTo(200.0, 0.01));
+      for (final ps in result.participants) {
+        expect(ps.share, closeTo(200.0, 0.01));
+      }
     });
 
     test('Alice rawBalance = +300', () {
@@ -499,8 +504,8 @@ void main() {
       expect(result.totalShared, closeTo(100.0, 0.01));
     });
 
-    test('equalShare rounds to 33.33', () {
-      expect(result.equalShare, closeTo(33.33, 0.01));
+    test('Alice (first receiver, no remainder) share rounds to 33.33', () {
+      expect(summaryFor(result, 1).share, closeTo(33.33, 0.01));
     });
 
     test('Alice amountPaid = 100', () {
@@ -604,8 +609,11 @@ void main() {
       );
     });
 
-    test('equalShare = 100', () {
-      expect(result.equalShare, closeTo(100.0, 0.01));
+    test('each participant share = 100', () {
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 3).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 4).share, closeTo(100.0, 0.01));
     });
 
     test('Alice rawBalance = +150', () {
@@ -702,8 +710,8 @@ void main() {
         directSettlements: [],
       );
 
-      // total = 300, equalShare = 100
-      expect(result.equalShare, closeTo(100.0, 0.01));
+      // total = 300, each participant share = 100
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
 
       final carolPs = summaryFor(result, 3);
       expect(carolPs.amountPaid, closeTo(0.0, 0.01));
@@ -751,7 +759,8 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(10000.0, 0.01));
-      expect(result.equalShare, closeTo(5000.0, 0.01));
+      expect(summaryFor(result, 1).share, closeTo(5000.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(5000.0, 0.01));
 
       expect(summaryFor(result, 1).rawBalance, closeTo(5000.0, 0.01));
       expect(summaryFor(result, 2).rawBalance, closeTo(-5000.0, 0.01));
@@ -779,9 +788,9 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(50000.0, 0.01));
-      expect(result.equalShare, closeTo(10000.0, 0.01));
 
       for (final ps in result.participants) {
+        expect(ps.share, closeTo(10000.0, 0.01));
         expect(ps.rawBalance, closeTo(0.0, 0.01));
         expect(ps.finalBalance, closeTo(0.0, 0.01));
       }
@@ -838,7 +847,7 @@ void main() {
       );
 
       expect(result.totalShared, closeTo(0.0, 0.01));
-      expect(result.equalShare, closeTo(0.0, 0.01));
+      expect(summaryFor(result, 1).share, closeTo(0.0, 0.01));
       expect(result.settlements, isEmpty);
     });
 
@@ -876,6 +885,106 @@ void main() {
       expect(summaryFor(result, 1).transferNet, closeTo(20.0, 0.01));
       expect(summaryFor(result, 2).transferNet, closeTo(-20.0, 0.01));
       expect(result.balanceWarning, isFalse);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // REMARKS #141 — custom split / expenseReceivers
+  group('16. Custom split (expenseReceivers)', () {
+    test('expense with no explicit receivers splits between everyone', () {
+      final alice = mkParticipant(1, 'Alice');
+      final bob = mkParticipant(2, 'Bob');
+      final carol = mkParticipant(3, 'Carol');
+      final expense = mkExpense(1, 1, 30000); // Alice pays 300 UAH
+
+      final result = calculateSummary(
+        participants: [alice, bob, carol],
+        expenses: [expense],
+        directSettlements: [],
+        // no entry for expense id 1 — implicit "everyone"
+      );
+
+      expect(summaryFor(result, 1).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(100.0, 0.01));
+      expect(summaryFor(result, 3).share, closeTo(100.0, 0.01));
+    });
+
+    test('expense split between a subset only affects those receivers', () {
+      final alice = mkParticipant(1, 'Alice');
+      final bob = mkParticipant(2, 'Bob');
+      final carol = mkParticipant(3, 'Carol');
+      final dave = mkParticipant(4, 'Dave');
+      final expense = mkExpense(1, 1, 120000); // Alice pays 1200 UAH
+
+      final result = calculateSummary(
+        participants: [alice, bob, carol, dave],
+        expenses: [expense],
+        directSettlements: [],
+        expenseReceivers: {1: [1, 2]}, // only Alice + Bob share this one
+      );
+
+      expect(summaryFor(result, 1).share, closeTo(600.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(600.0, 0.01));
+      expect(summaryFor(result, 3).share, closeTo(0.0, 0.01));
+      expect(summaryFor(result, 4).share, closeTo(0.0, 0.01));
+
+      // Carol and Dave weren't involved at all — no balance, no settlement.
+      expect(summaryFor(result, 3).finalBalance, closeTo(0.0, 0.01));
+      expect(summaryFor(result, 4).finalBalance, closeTo(0.0, 0.01));
+      final involvesCarolOrDave = result.settlements
+          .any((p) => [p.fromId, p.toId].any((id) => id == 3 || id == 4));
+      expect(involvesCarolOrDave, isFalse);
+
+      // Alice paid 1200, her own share is 600 → she's owed 600 by Bob.
+      expect(result.settlements, hasLength(1));
+      final payment = paymentFor(result, 2, 1);
+      expect(payment, isNotNull);
+      expect(payment!.amount, closeTo(600.0, 0.01));
+    });
+
+    test('mixing explicit-subset and implicit-everyone expenses aggregates correctly', () {
+      final alice = mkParticipant(1, 'Alice');
+      final bob = mkParticipant(2, 'Bob');
+      final carol = mkParticipant(3, 'Carol');
+
+      final e1 = mkExpense(1, 1, 30000); // Alice pays 300, split all 3
+      final e2 = mkExpense(2, 1, 20000); // Alice pays 200, split Alice+Bob only
+
+      final result = calculateSummary(
+        participants: [alice, bob, carol],
+        expenses: [e1, e2],
+        directSettlements: [],
+        expenseReceivers: {2: [1, 2]},
+      );
+
+      // totalShared is unaffected by who the receivers are.
+      expect(result.totalShared, closeTo(500.0, 0.01));
+
+      // Alice: 100 (from e1) + 100 (from e2) = 200
+      expect(summaryFor(result, 1).share, closeTo(200.0, 0.01));
+      // Bob: 100 (from e1) + 100 (from e2) = 200
+      expect(summaryFor(result, 2).share, closeTo(200.0, 0.01));
+      // Carol: 100 (from e1) + 0 (not a receiver on e2) = 100
+      expect(summaryFor(result, 3).share, closeTo(100.0, 0.01));
+
+      // Sum of shares still equals totalShared — balance sum stays at 0.
+      expect(result.balanceWarning, isFalse);
+    });
+
+    test('an empty explicit receiver list falls back to everyone, same as a missing entry', () {
+      final alice = mkParticipant(1, 'Alice');
+      final bob = mkParticipant(2, 'Bob');
+      final expense = mkExpense(1, 1, 10000); // 100 UAH
+
+      final result = calculateSummary(
+        participants: [alice, bob],
+        expenses: [expense],
+        directSettlements: [],
+        expenseReceivers: {1: []},
+      );
+
+      expect(summaryFor(result, 1).share, closeTo(50.0, 0.01));
+      expect(summaryFor(result, 2).share, closeTo(50.0, 0.01));
     });
   });
 }

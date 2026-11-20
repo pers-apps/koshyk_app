@@ -13,10 +13,13 @@ final summaryProvider =
   if (participantsAsync.hasValue &&
       expensesAsync.hasValue &&
       settlementsAsync.hasValue) {
+    final receivers =
+        await ref.watch(expensesDaoProvider).getReceiversByGroup(groupId);
     yield calculateSummary(
       participants: participantsAsync.value!,
       expenses: expensesAsync.value!,
       directSettlements: settlementsAsync.value!,
+      expenseReceivers: receivers,
     );
   }
 });

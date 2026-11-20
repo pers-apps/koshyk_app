@@ -9,7 +9,9 @@ import '../../../core/db/database.dart';
 import '../../../core/db/app_settings_dao.dart';
 import '../../../core/db/providers.dart';
 import '../../../core/utils/expression_parser.dart';
+import '../../../core/widgets/amount_operator_bar.dart';
 import '../../../core/utils/money.dart';
+import '../../../core/utils/pastel_colors.dart';
 import '../data/expenses_providers.dart';
 import '../../participants/data/participants_providers.dart';
 import '../../categories/data/categories_providers.dart';
@@ -38,6 +40,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   bool _amountError = false;
   List<Participant> _participants = [];
   List<Category> _categories = [];
+  List<int> _receiverIds = [];
 
   @override
   void initState() {
@@ -47,6 +50,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   }
 
   void _onAmountFocusChange() {
+    // Rebuild so AmountOperatorBar shows/hides with focus (REMARKS #143).
+    setState(() {});
     if (!_amountFocus.hasFocus) {
       final text = _amountCtrl.text.trim();
       if (text.isEmpty) {
@@ -104,8 +109,19 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                 allParticipants.where((p) => p.id == _payerId).firstOrNull;
             if (payer != null) _participants = [payer, ..._participants];
           }
+          // Explicit receivers, if any were saved; keep only ids still
+          // offered in the form. Empty (no explicit rows, or everyone
+          // filtered out) falls back to "everyone" — same meaning as today.
+          final explicitReceivers = await dao.getReceiverIds(widget.expenseId!);
+          _receiverIds = explicitReceivers
+              .where((id) => _participants.any((p) => p.id == id))
+              .toList();
+          if (_receiverIds.isEmpty) {
+            _receiverIds = _participants.map((p) => p.id).toList();
+          }
         }
       } else {
+        _receiverIds = _participants.map((p) => p.id).toList();
         // Default payer from last-used
         final lastPayerId =
             await db.getSetting('last_payer_${widget.groupId}');
@@ -137,6 +153,84 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  String _receiverSummary(AppLocalizations l) {
+    final allIds = _participants.map((p) => p.id).toSet();
+    final selected = _receiverIds.toSet();
+    if (selected.length == allIds.length && selected.containsAll(allIds)) {
+      return l.splitAll;
+    }
+    return _receiverIds
+        .map((id) => _participants.where((p) => p.id == id).firstOrNull?.name)
+        .whereType<String>()
+        .join(', ');
+  }
+
+  Future<void> _pickReceivers(AppLocalizations l) async {
+    final selected = Set<int>.from(_receiverIds);
+    final colors = buildParticipantColors(
+        _participants.map((p) => MapEntry(p.id, p.name)).toList());
+
+    final result = await showModalBottomSheet<Set<int>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 18,
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 18,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.splitBetweenSheetTitle,
+                      style: Theme.of(sheetContext).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  for (final p in _participants)
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: selected.contains(p.id),
+                      onChanged: (checked) => setSheetState(() {
+                        if (checked == true) {
+                          selected.add(p.id);
+                        } else {
+                          selected.remove(p.id);
+                        }
+                      }),
+                      secondary: CircleAvatar(
+                        radius: 14,
+                        backgroundColor: colors[p.id] ?? kPastelColors[0],
+                        child: Text(
+                          p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      title: Text(p.name),
+                    ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: selected.isEmpty
+                        ? null
+                        : () => Navigator.pop(sheetContext, selected),
+                    child: Text(l.done),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() => _receiverIds = result.toList());
+    }
+  }
+
   Future<void> _save() async {
     if (_saving) return;
     if (!_formKey.currentState!.validate()) return;
@@ -154,9 +248,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       final kop = toKopiykas(amount);
       final dao = ref.read(expensesDaoProvider);
 
+      int expenseId;
       if (_existing == null) {
         // Free-plan limit disabled for v1.0 (Phase 1: all users have full access).
-        await dao.insertExpense(ExpensesCompanion.insert(
+        expenseId = await dao.insertExpense(ExpensesCompanion.insert(
           groupId: widget.groupId,
           payerId: _payerId!,
           amountKop: kop,
@@ -166,6 +261,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           comment: Value(_commentCtrl.text.trim()),
         ));
       } else {
+        expenseId = _existing!.id;
         await dao.updateExpense(_existing!.copyWith(
           payerId: _payerId!,
           amountKop: kop,
@@ -175,6 +271,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           comment: _commentCtrl.text.trim(),
         ));
       }
+
+      await dao.setReceivers(expenseId, _receiverIds);
 
       // Save last-used payer
       final db = ref.read(databaseProvider);
@@ -200,7 +298,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
 
     return GradientScaffold(
       appBar: AppBar(title: Text(isEdit ? l.editExpense : l.addExpense)),
-      body: Form(
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -274,6 +375,25 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               controller: _commentCtrl,
               decoration: InputDecoration(labelText: l.comment),
             ),
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () => _pickReceivers(l),
+              child: InputDecorator(
+                decoration: InputDecoration(labelText: l.splitBetween),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _receiverSummary(l),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_drop_down),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
@@ -287,6 +407,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             ),
           ],
         ),
+      ),
+          ),
+          if (_amountFocus.hasFocus)
+            AmountOperatorBar(controller: _amountCtrl),
+        ],
       ),
     );
   }

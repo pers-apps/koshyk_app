@@ -18,6 +18,7 @@ part 'database.g.dart';
     Categories,
     Expenses,
     DirectSettlements,
+    ExpenseParticipants,
     AppSettings,
   ],
   daos: [
@@ -44,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,6 +63,13 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.addColumn(categories, categories.color);
+          }
+          if (from < 5) {
+            await m.createTable(expenseParticipants);
+          }
+          if (from < 6) {
+            await m.addColumn(groups, groups.iconEmoji);
+            await m.addColumn(groups, groups.iconImage);
           }
         },
       );

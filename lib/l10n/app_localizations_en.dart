@@ -112,6 +112,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get category => 'Category';
 
   @override
+  String get splitBetween => 'Split between';
+
+  @override
+  String get splitAll => 'All';
+
+  @override
+  String get splitBetweenSheetTitle => 'Split between:';
+
+  @override
   String get invalidAmount => 'Enter a valid amount (> 0)';
 
   @override
@@ -142,7 +151,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalShared => 'Total shared expenses';
 
   @override
-  String get equalShare => 'Equal share';
+  String get shareOfEachPerson => 'Each person\'s share';
 
   @override
   String get amountPaid => 'Amount paid';
@@ -193,10 +202,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allTime => 'All time';
 
   @override
-  String get export => 'Export CSV';
+  String get export => 'Export (backup)';
 
   @override
-  String get exportDone => 'CSV file ready';
+  String get exportDone => 'Backup file ready';
+
+  @override
+  String get importBackup => 'Import (backup)';
+
+  @override
+  String get importDone => 'Group imported';
+
+  @override
+  String get importInvalidFile =>
+      'Couldn\'t read file — invalid format or version';
 
   @override
   String get delete => 'Delete';
@@ -255,10 +274,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minOneCategoryRequired => 'At least one category must remain';
 
   @override
-  String get equalSharingInfo =>
-      'Expenses are split equally among participants';
-
-  @override
   String get groupSettings => 'Group settings';
 
   @override
@@ -272,6 +287,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareTitle => 'Koshyk Summary';
+
+  @override
+  String get latestExpensesShareTitle => 'Koshyk — Recent expenses';
+
+  @override
+  String get latestExpensesHeading => 'Last 10 expenses';
 
   @override
   String get spendingByCategory => 'Spending by category';
@@ -347,14 +368,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultCategoryFood => 'Food';
 
   @override
-  String get defaultCategoryWork => 'Transport';
+  String get defaultCategoryWork => 'Work';
+
+  @override
+  String get defaultCategoryTransport => 'Transport';
 
   @override
   String get appTitleTagline => 'Koshyk — does the math for you';
 
   @override
   String get appDescription =>
-      'Koshyk is a mobile app for shared expense tracking in a group. Perfect for trips, shared living, and team events.\n\n• Create groups with participants\n• Add expenses with categories and payer\n• Summary: total amount, equal share, who owes whom\n• Settlements record debt repayments between members\n• Pie chart of expenses by category\n• Light and dark theme support';
+      'Koshyk is a mobile app for shared expense tracking in a group. Perfect for trips, shared living, and team events.\n\n• Create groups with participants and categories\n• Personalise groups with an emoji or photo\n• Add expenses with category, payer and comment\n• Split an expense among everyone or only selected participants\n• Calculate right in the amount field (e.g. 300+450 or 120×3)\n• Summary: total amount, each person\'s share, who owes whom\n• Settlements record debt repayments between members\n• Pie chart of expenses by category\n• Share the summary or latest expenses as an image\n• Back up a group to a file and move it to another phone\n• Archive finished groups\n• Works offline — your data stays on your device\n• Light and dark theme support';
 
   @override
   String get version => 'Version';
@@ -409,4 +433,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get upToDate => 'You have the latest version ✓';
+
+  @override
+  String get groupIcon => 'Group icon';
+
+  @override
+  String get groupIconEmoji => 'Emoji';
+
+  @override
+  String get groupIconGallery => 'Photo from gallery';
+
+  @override
+  String get groupIconCamera => 'Take a photo';
+
+  @override
+  String get groupIconRemove => 'Remove icon';
+
+  @override
+  String get groupIconEmojiHint => 'Or type any emoji';
+
+  @override
+  String get groupIconCropTitle => 'Crop photo';
+
+  @override
+  String get groupIconError => 'Could not load the photo';
+
+  @override
+  String splitHintCount(int count, int total) {
+    return '$count of $total participants';
+  }
+
+  @override
+  String splitHintSemantics(String names) {
+    return 'Split between: $names';
+  }
 }

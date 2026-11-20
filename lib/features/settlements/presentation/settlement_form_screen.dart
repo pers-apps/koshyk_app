@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/db/database.dart';
 import '../../../core/utils/expression_parser.dart';
+import '../../../core/widgets/amount_operator_bar.dart';
 import '../../../core/utils/money.dart';
 import '../data/settlements_providers.dart';
 import '../../participants/data/participants_providers.dart';
@@ -49,6 +50,8 @@ class _SettlementFormScreenState
   }
 
   void _onAmountFocusChange() {
+    // Rebuild so AmountOperatorBar shows/hides with focus (REMARKS #143).
+    setState(() {});
     if (!_amountFocus.hasFocus) {
       final text = _amountCtrl.text.trim();
       if (text.isEmpty) {
@@ -218,7 +221,10 @@ class _SettlementFormScreenState
     return GradientScaffold(
       appBar:
           AppBar(title: Text(isEdit ? l.editSettlement : l.addSettlement)),
-      body: Form(
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -339,6 +345,11 @@ class _SettlementFormScreenState
             ),
           ],
         ),
+      ),
+          ),
+          if (_amountFocus.hasFocus)
+            AmountOperatorBar(controller: _amountCtrl),
+        ],
       ),
     );
   }

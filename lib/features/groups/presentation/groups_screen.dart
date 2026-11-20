@@ -1,4 +1,5 @@
 import '../../../core/widgets/gradient_scaffold.dart';
+import '../../../core/utils/snack_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import '../../../l10n/app_localizations.dart';
 import '../data/groups_providers.dart';
 import '../../../core/utils/money.dart';
 import '../../expenses/data/expenses_providers.dart';
+import '../../export/export_providers.dart';
+import '../../../core/widgets/group_avatar.dart';
 
 const kFreeGroupLimit = 1;
 
@@ -40,6 +43,14 @@ class _GroupsScreenState extends ConsumerState<GroupsScreen> {
   Future<void> _onCreateGroup() async {
     // Free-plan limit disabled for v1.0 (Phase 1: all users have full access).
     if (mounted) context.push('/group/new');
+  }
+
+  Future<void> _onImport() async {
+    final newGroupId =
+        await ref.read(importServiceProvider).importJson(context);
+    if (newGroupId != null && mounted) {
+      context.push('/group/$newGroupId/expenses');
+    }
   }
 
   @override
@@ -88,6 +99,11 @@ class _GroupsScreenState extends ConsumerState<GroupsScreen> {
             ],
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.file_download_outlined),
+              tooltip: l.importBackup,
+              onPressed: _onImport,
+            ),
             IconButton(
               icon: const Icon(Icons.more_horiz),
               onPressed: () => context.push('/more'),
@@ -142,6 +158,8 @@ class _GroupsScreenState extends ConsumerState<GroupsScreen> {
                       currency: g.currencySymbol,
                       isArchived: false,
                       roundAmounts: g.roundAmounts,
+                      iconEmoji: g.iconEmoji,
+                      iconImage: g.iconImage,
                     )),
                 if (archived.isNotEmpty) ...[
                   const Divider(height: 1),
@@ -181,6 +199,8 @@ class _GroupsScreenState extends ConsumerState<GroupsScreen> {
                           currency: g.currencySymbol,
                           isArchived: true,
                           roundAmounts: g.roundAmounts,
+                          iconEmoji: g.iconEmoji,
+                          iconImage: g.iconImage,
                         )),
                 ],
               ],
@@ -225,6 +245,8 @@ class _SwipeableGroupTile extends ConsumerWidget {
   final String currency;
   final bool isArchived;
   final bool roundAmounts;
+  final String? iconEmoji;
+  final String? iconImage;
 
   const _SwipeableGroupTile({
     required this.groupId,
@@ -232,6 +254,8 @@ class _SwipeableGroupTile extends ConsumerWidget {
     required this.currency,
     required this.isArchived,
     required this.roundAmounts,
+    this.iconEmoji,
+    this.iconImage,
   });
 
   @override
@@ -291,7 +315,8 @@ class _SwipeableGroupTile extends ConsumerWidget {
               SnackBar(
                 content: Text(
                     isArchived ? l.groupUnarchived : l.groupArchived),
-                duration: const Duration(seconds: 4),
+                duration: kActionSnackBarDuration,
+                persist: false,
                 action: SnackBarAction(
                   label: l.undo,
                   onPressed: () => dao.archiveGroup(groupId, archive: isArchived),
@@ -305,7 +330,7 @@ class _SwipeableGroupTile extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(l.deleted),
-                duration: const Duration(seconds: 4),
+                duration: kActionSnackBarDuration,
               ),
             );
           }
@@ -317,6 +342,8 @@ class _SwipeableGroupTile extends ConsumerWidget {
         currency: currency,
         isArchived: isArchived,
         roundAmounts: roundAmounts,
+        iconEmoji: iconEmoji,
+        iconImage: iconImage,
       ),
     );
   }
@@ -328,6 +355,8 @@ class _GroupTileContent extends ConsumerWidget {
   final String currency;
   final bool isArchived;
   final bool roundAmounts;
+  final String? iconEmoji;
+  final String? iconImage;
 
   const _GroupTileContent({
     required this.groupId,
@@ -335,6 +364,8 @@ class _GroupTileContent extends ConsumerWidget {
     required this.currency,
     required this.isArchived,
     required this.roundAmounts,
+    this.iconEmoji,
+    this.iconImage,
   });
 
   @override
@@ -348,11 +379,14 @@ class _GroupTileContent extends ConsumerWidget {
     );
 
     return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: isArchived ? Colors.grey.shade300 : null,
-        child: Icon(
-          Icons.group,
-          color: isArchived ? Colors.grey.shade500 : null,
+      // Group icon (REMARKS #145); archived groups shown faded.
+      leading: Opacity(
+        opacity: isArchived ? 0.45 : 1,
+        child: GroupAvatar(
+          name: name,
+          iconEmoji: iconEmoji,
+          iconImage: iconImage,
+          size: 40,
         ),
       ),
       title: Text(

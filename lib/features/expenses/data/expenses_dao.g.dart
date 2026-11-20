@@ -8,6 +8,8 @@ mixin _$ExpensesDaoMixin on DatabaseAccessor<AppDatabase> {
   $ParticipantsTable get participants => attachedDatabase.participants;
   $CategoriesTable get categories => attachedDatabase.categories;
   $ExpensesTable get expenses => attachedDatabase.expenses;
+  $ExpenseParticipantsTable get expenseParticipants =>
+      attachedDatabase.expenseParticipants;
   ExpensesDaoManager get managers => ExpensesDaoManager(this);
 }
 
@@ -22,4 +24,9 @@ class ExpensesDaoManager {
       $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db.attachedDatabase, _db.expenses);
+  $$ExpenseParticipantsTableTableManager get expenseParticipants =>
+      $$ExpenseParticipantsTableTableManager(
+        _db.attachedDatabase,
+        _db.expenseParticipants,
+      );
 }

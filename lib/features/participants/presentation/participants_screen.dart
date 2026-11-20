@@ -1,4 +1,5 @@
 import '../../../core/widgets/gradient_scaffold.dart';
+import '../../../core/utils/snack_bars.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../../settlements/data/settlements_providers.dart';
 import '../../groups/data/groups_providers.dart';
 import '../../../core/utils/pastel_colors.dart';
 import '../../../core/widgets/onboarding_progress_bar.dart';
+
 class ParticipantsScreen extends ConsumerWidget {
   final int groupId;
   final bool isOnboarding;
@@ -23,60 +25,68 @@ class ParticipantsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context)!;
     final asyncList = ref.watch(participantsStreamProvider(groupId));
-    final groupName = ref.watch(groupStreamByIdProvider(groupId)).maybeWhen(
-      data: (g) => g?.name ?? '',
-      orElse: () => '',
-    );
+    final groupName = ref
+        .watch(groupStreamByIdProvider(groupId))
+        .maybeWhen(data: (g) => g?.name ?? '', orElse: () => '');
 
     return GradientScaffold(
       appBar: AppBar(
-        title: Text(groupName.isNotEmpty ? '$groupName — ${l.participants}' : l.participants),
-        actions: isOnboarding
-            ? [
-                TextButton(
-                  onPressed: () =>
-                      context.push('/group/$groupId/categories'),
-                  child: Text(l.nextStep,
-                      style: const TextStyle(color: Colors.white)),
-                ),
-              ]
-            : null,
+        title: Text(
+          groupName.isNotEmpty
+              ? '$groupName — ${l.participants}'
+              : l.participants,
+        ),
+        actions:
+            isOnboarding
+                ? [
+                  TextButton(
+                    onPressed: () => context.push('/group/$groupId/categories'),
+                    child: Text(
+                      l.nextStep,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ]
+                : null,
       ),
-      bottomNavigationBar: isOnboarding
-          ? const OnboardingProgressBar(currentStep: 1)
-          : null,
+      bottomNavigationBar:
+          isOnboarding ? const OnboardingProgressBar(currentStep: 1) : null,
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (list) {
           final colorMap = buildParticipantColors(
-              list.map((p) => MapEntry(p.id, p.name)).toList());
+            list.map((p) => MapEntry(p.id, p.name)).toList(),
+          );
           return list.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('👥', style: TextStyle(fontSize: 48)),
-                      const SizedBox(height: 12),
-                      Text(
-                        l.addParticipant,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
-                        ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('👥', style: TextStyle(fontSize: 48)),
+                    const SizedBox(height: 12),
+                    Text(
+                      l.addParticipant,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.75),
                       ),
-                    ],
-                  ),
-                )
+                    ),
+                  ],
+                ),
+              )
               : ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (ctx, i) => _ParticipantTile(
-                    participant: list[i],
-                    groupId: groupId,
-                    pastelColor: colorMap[list[i].id] ?? kPastelColors[0],
-                  ),
-                );
+                itemCount: list.length,
+                itemBuilder:
+                    (ctx, i) => _ParticipantTile(
+                      participant: list[i],
+                      groupId: groupId,
+                      pastelColor: colorMap[list[i].id] ?? kPastelColors[0],
+                    ),
+              );
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -90,11 +100,12 @@ class ParticipantsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _ParticipantForm(
-        groupId: groupId,
-        existing: existing,
-        widgetRef: ref,
-      ),
+      builder:
+          (_) => _ParticipantForm(
+            groupId: groupId,
+            existing: existing,
+            widgetRef: ref,
+          ),
     );
   }
 }
@@ -131,24 +142,30 @@ class _ParticipantTile extends ConsumerWidget {
       ),
       trailing: PopupMenuButton<String>(
         onSelected: (val) => _handleMenu(context, ref, val),
-        itemBuilder: (_) => [
-          PopupMenuItem(value: 'edit', child: Text(l.editParticipant)),
-          PopupMenuItem(
-            value: 'toggle',
-            child: Text(isActive ? l.deactivate : l.activate),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: Text(l.deleteParticipant,
-                style: const TextStyle(color: Colors.red)),
-          ),
-        ],
+        itemBuilder:
+            (_) => [
+              PopupMenuItem(value: 'edit', child: Text(l.editParticipant)),
+              PopupMenuItem(
+                value: 'toggle',
+                child: Text(isActive ? l.deactivate : l.activate),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(
+                  l.deleteParticipant,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
       ),
     );
   }
 
   Future<void> _handleMenu(
-      BuildContext context, WidgetRef ref, String action) async {
+    BuildContext context,
+    WidgetRef ref,
+    String action,
+  ) async {
     final l = AppLocalizations.of(context)!;
     final dao = ref.read(participantsDaoProvider);
 
@@ -156,15 +173,17 @@ class _ParticipantTile extends ConsumerWidget {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (_) => _ParticipantForm(
-          groupId: groupId,
-          existing: participant,
-          widgetRef: ref,
-        ),
+        builder:
+            (_) => _ParticipantForm(
+              groupId: groupId,
+              existing: participant,
+              widgetRef: ref,
+            ),
       );
     } else if (action == 'toggle') {
       await dao.updateParticipant(
-          participant.copyWith(isActive: !participant.isActive));
+        participant.copyWith(isActive: !participant.isActive),
+      );
     } else if (action == 'delete') {
       final expDao = ref.read(expensesDaoProvider);
       final setDao = ref.read(settlementsDaoProvider);
@@ -172,13 +191,15 @@ class _ParticipantTile extends ConsumerWidget {
       final hasSett = await setDao.participantHasSettlements(participant.id);
       if ((hasExp || hasSett) && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.cannotDeleteParticipantHasData)));
+          SnackBar(content: Text(l.cannotDeleteParticipantHasData)),
+        );
         return;
       }
       await dao.deleteParticipant(participant.id);
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l.deleted)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.deleted), duration: kActionSnackBarDuration),
+        );
       }
     }
   }
@@ -188,8 +209,11 @@ class _ParticipantForm extends StatefulWidget {
   final int groupId;
   final Participant? existing;
   final WidgetRef widgetRef;
-  const _ParticipantForm(
-      {required this.groupId, this.existing, required this.widgetRef});
+  const _ParticipantForm({
+    required this.groupId,
+    this.existing,
+    required this.widgetRef,
+  });
 
   @override
   State<_ParticipantForm> createState() => _ParticipantFormState();
@@ -211,11 +235,15 @@ class _ParticipantFormState extends State<_ParticipantForm> {
     final name = _nameCtrl.text.trim();
     final dao = widget.widgetRef.read(participantsDaoProvider);
 
-    final exists = await dao.nameExistsInGroup(name, widget.groupId,
-        excludeId: widget.existing?.id);
+    final exists = await dao.nameExistsInGroup(
+      name,
+      widget.groupId,
+      excludeId: widget.existing?.id,
+    );
     if (exists && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.duplicateParticipantName)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.duplicateParticipantName)));
       return;
     }
 
@@ -234,7 +262,9 @@ class _ParticipantFormState extends State<_ParticipantForm> {
     final l = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
-        left: 16, right: 16, top: 16,
+        left: 16,
+        right: 16,
+        top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Form(
@@ -242,15 +272,17 @@ class _ParticipantFormState extends State<_ParticipantForm> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.existing == null ? l.addParticipant : l.editParticipant,
-                style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              widget.existing == null ? l.addParticipant : l.editParticipant,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _nameCtrl,
               autofocus: true,
               decoration: InputDecoration(labelText: l.participantName),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? l.required : null,
+              validator:
+                  (v) => (v == null || v.trim().isEmpty) ? l.required : null,
             ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _save, child: Text(l.save)),

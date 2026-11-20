@@ -55,3 +55,6 @@ build/debug-info/
 
 # iOS sensitive files
 ios/Runner/GoogleService-Info.plist
+
+# Signing keys folder (incl. *.jks.old backups)
+android/keystore/

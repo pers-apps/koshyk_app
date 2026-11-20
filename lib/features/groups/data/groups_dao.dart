@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../../core/db/database.dart';
 import '../../../core/db/tables.dart';
+import 'group_icon_storage.dart';
 
 part 'groups_dao.g.dart';
 
@@ -51,8 +52,14 @@ class GroupsDao extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
       (update(groups)..where((t) => t.id.equals(id)))
           .write(GroupsCompanion(isArchived: Value(archive)));
 
-  Future<int> deleteGroup(int id) =>
-      (delete(groups)..where((t) => t.id.equals(id))).go();
+  /// Deletes the group and its photo icon file, if any (REMARKS #145).
+  Future<int> deleteGroup(int id) async {
+    final g = await (select(groups)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    final n = await (delete(groups)..where((t) => t.id.equals(id))).go();
+    await GroupIconStorage.delete(g?.iconImage);
+    return n;
+  }
 
   Future<bool> nameExists(String name, {int? excludeId}) async {
     final query = select(groups)

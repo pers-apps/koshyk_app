@@ -111,4 +111,31 @@ void main() {
       });
     });
   });
+
+  // REMARKS #143 — operator precedence and typographic/locale input.
+  group('parseAmount — precedence and normalization (#143)', () {
+    final cases = <String, double>{
+      '100+50*2': 200,
+      '100-60/3': 80,
+      '10+20/4*2': 20,
+      '(100+50)*2': 300,
+      '100×2': 200,
+      '100÷4': 25,
+      '100−50': 50,
+      '100+50×2': 200,
+      '12,5+1': 13.5,
+      ' 300 + 450 ': 750,
+    };
+    cases.forEach((input, expected) {
+      test('"$input" → $expected', () {
+        final result = parseAmount(input);
+        expect(result, isNotNull);
+        expect(result!, closeTo(expected, 0.001));
+      });
+    });
+
+    test('normalizeExpression maps × ÷ − and comma to ASCII', () {
+      expect(normalizeExpression('1×2÷3−4,5'), '1*2/3-4.5');
+    });
+  });
 }

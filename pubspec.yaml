@@ -2,7 +2,7 @@ name: koshyk_app
 description: "Koshyk - Expense Splitter App"
 publish_to: 'none'
 
-version: 2.0.0-dev.1+1
+version: 2.3.0+13
 
 environment:
   sdk: ^3.7.2
@@ -26,8 +26,10 @@ dependencies:
   fl_chart: ^0.69.0
   # Localisation
   intl: ^0.20.2
-  # CSV export / sharing
+  # Export / sharing
   share_plus: ^10.1.4
+  # Backup / transfer — import picker
+  file_picker: ^8.1.6
   # Arithmetic expression evaluator
   math_expressions: ^2.6.0
   # Typography
@@ -44,6 +46,8 @@ dependencies:
   shared_preferences: ^2.3.0
   # Tutorial overlay
   tutorial_coach_mark: ^1.2.11
+  image_picker: ^1.2.4
+  crop_your_image: ^2.0.1
 
 dev_dependencies:
   flutter_test:

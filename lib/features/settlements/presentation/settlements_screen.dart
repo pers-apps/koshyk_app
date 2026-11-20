@@ -1,4 +1,5 @@
 import '../../../core/widgets/gradient_scaffold.dart';
+import '../../../core/utils/snack_bars.dart';
 import '../../../core/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import '../data/settlements_providers.dart';
 import '../../participants/data/participants_providers.dart';
 import '../../categories/data/categories_providers.dart';
 import '../../groups/data/groups_providers.dart';
+import '../../../core/widgets/group_avatar.dart';
 
 class SettlementsScreen extends ConsumerWidget {
   final int groupId;
@@ -32,6 +34,7 @@ class SettlementsScreen extends ConsumerWidget {
       data: (list) => {for (final c in list) c.id: c.name},
       orElse: () => <int, String>{},
     );
+    final group = groupAsync.maybeWhen(data: (g) => g, orElse: () => null);
     final groupName = groupAsync.maybeWhen(
       data: (g) => g?.name ?? '',
       orElse: () => '',
@@ -47,109 +50,121 @@ class SettlementsScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) { if (context.mounted) context.go('/'); },
+      onPopInvokedWithResult: (_, __) {
+        if (context.mounted) context.go('/');
+      },
       child: GradientScaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
-          tooltip: 'Groups',
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset('assets/logo.png', width: 28, height: 28),
-            ),
-            const SizedBox(width: 8),
-            Flexible(child: Text(groupName.isNotEmpty ? '$groupName — ${l.settlements}' : l.settlements)),
-          ],
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (val) {
-              switch (val) {
-                case 'participants':
-                  context.push('/group/$groupId/participants');
-                case 'categories':
-                  context.push('/group/$groupId/categories');
-                case 'edit':
-                  context.push('/group/$groupId/edit');
-              }
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(value: 'participants', child: Text(l.participants)),
-              PopupMenuItem(value: 'categories', child: Text(l.categories)),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 'edit', child: Text(l.editGroup)),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.go('/'),
+            tooltip: 'Groups',
+          ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GroupAvatar(
+                name: groupName,
+                iconEmoji: group?.iconEmoji,
+                iconImage: group?.iconImage,
+                size: 28,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  groupName.isNotEmpty
+                      ? '$groupName — ${l.settlements}'
+                      : l.settlements,
+                ),
+              ),
             ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // List
-          Expanded(
-            child: asyncList.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(child: Text('$e')),
-              data: (list) {
-                if (list.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('🤝', style: const TextStyle(fontSize: 56)),
-                          const SizedBox(height: 16),
-                          Text(
-                            l.noSettlementsHint,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          OutlinedButton.icon(
-                            onPressed: () => context.push('/group/$groupId/expenses/new'),
-                            icon: const Icon(Icons.add),
-                            label: Text(l.addExpense),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (val) {
+                switch (val) {
+                  case 'participants':
+                    context.push('/group/$groupId/participants');
+                  case 'categories':
+                    context.push('/group/$groupId/categories');
+                  case 'edit':
+                    context.push('/group/$groupId/edit');
                 }
-                return ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (ctx, i) => _SettlementTile(
-                    settlement: list[i],
-                    groupId: groupId,
-                    participants: participants,
-                    categories: categories,
-                    roundAmounts: roundAmounts,
-                    currency: currency,
-                  ),
-                );
               },
+              itemBuilder:
+                  (_) => [
+                    PopupMenuItem(
+                      value: 'participants',
+                      child: Text(l.participants),
+                    ),
+                    PopupMenuItem(
+                      value: 'categories',
+                      child: Text(l.categories),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(value: 'edit', child: Text(l.editGroup)),
+                  ],
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: _GlowFab(
-        onTap: () => context.push('/group/$groupId/settlements/new'),
-      ),
-      bottomNavigationBar: AppBottomNav(currentIndex: 2, groupId: groupId),
+          ],
+        ),
+        body: Column(
+          children: [
+            // List
+            Expanded(
+              child: asyncList.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('$e')),
+                data: (list) {
+                  if (list.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('🤝', style: const TextStyle(fontSize: 56)),
+                            const SizedBox(height: 16),
+                            Text(
+                              l.noSettlementsHint,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.75),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: list.length,
+                    itemBuilder:
+                        (ctx, i) => _SettlementTile(
+                          settlement: list[i],
+                          groupId: groupId,
+                          participants: participants,
+                          categories: categories,
+                          roundAmounts: roundAmounts,
+                          currency: currency,
+                        ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: _GlowFab(
+          onTap: () => context.push('/group/$groupId/settlements/new'),
+        ),
+        bottomNavigationBar: AppBottomNav(currentIndex: 2, groupId: groupId),
       ),
     );
   }
 }
-
 
 // ── Glow FAB ──────────────────────────────────────────────────────────────────
 
@@ -203,9 +218,10 @@ class _SettlementTile extends ConsumerWidget {
     final l = AppLocalizations.of(context)!;
     final from = participants[settlement.fromParticipantId] ?? '?';
     final to = participants[settlement.toParticipantId] ?? '?';
-    final catName = settlement.categoryId != null
-        ? categories[settlement.categoryId]
-        : null;
+    final catName =
+        settlement.categoryId != null
+            ? categories[settlement.categoryId]
+            : null;
     final dateStr = DateFormat('dd.MM.yyyy').format(settlement.date);
 
     return Dismissible(
@@ -220,18 +236,23 @@ class _SettlementTile extends ConsumerWidget {
       confirmDismiss: (_) async {
         final result = await showDialog<bool>(
           context: context,
-          builder: (_) => AlertDialog(
-            title: Text(l.delete),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(l.cancel)),
-              TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(l.delete,
-                      style: const TextStyle(color: Colors.red))),
-            ],
-          ),
+          builder:
+              (_) => AlertDialog(
+                title: Text(l.delete),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(l.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Text(
+                      l.delete,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
         );
         return result == true;
       },
@@ -239,28 +260,41 @@ class _SettlementTile extends ConsumerWidget {
         await ref.read(settlementsDaoProvider).deleteSettlement(settlement.id);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.deleted)),
+            SnackBar(
+              content: Text(l.deleted),
+              duration: kActionSnackBarDuration,
+            ),
           );
         }
       },
       child: ListTile(
         leading: CircleAvatar(
           radius: 22,
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-          child: Icon(Icons.swap_horiz, color: Theme.of(context).colorScheme.primary, size: 22),
+          backgroundColor: Theme.of(
+            context,
+          ).colorScheme.primary.withValues(alpha: 0.15),
+          child: Icon(
+            Icons.swap_horiz,
+            color: Theme.of(context).colorScheme.primary,
+            size: 22,
+          ),
         ),
         title: Text(
           '$from → $to: ${formatMoney(settlement.amountKop, symbol: currency, round: roundAmounts)}',
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
-        subtitle: Text([
-          dateStr,
-          if (catName != null) catName,
-          if (settlement.comment.isNotEmpty) settlement.comment,
-        ].join(' · ')),
+        subtitle: Text(
+          [
+            dateStr,
+            if (catName != null) catName,
+            if (settlement.comment.isNotEmpty) settlement.comment,
+          ].join(' · '),
+        ),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push(
-            '/group/$groupId/settlements/${settlement.id}/edit'),
+        onTap:
+            () => context.push(
+              '/group/$groupId/settlements/${settlement.id}/edit',
+            ),
       ),
     );
   }
